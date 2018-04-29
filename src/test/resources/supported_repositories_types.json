@@ -1,0 +1,21 @@
+[
+  {
+    "Github" : {
+      "base_location" : "https://github.com/",
+      "access_location" : "https://raw.githubusercontent.com/",
+      "api_location" : "https://api.github.com/repos/"
+    }
+  },{
+    "UriBased" : {
+      "base_location" : "https://"
+    }
+  },{
+    "LocalLinux" : {
+      "base_location" : "^(.+)/([^/]+)$"
+    }
+  },{
+    "LocalWindows" : {
+      "base_location" : "([a-zA-Z]:)(\\\\[a-zA-Z0-9_.-]+)+\\\\?"
+    }
+  }
+]

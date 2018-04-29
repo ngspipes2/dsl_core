@@ -1,6 +1,6 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool;
 
-import interfaces.IToolRepository;
+import interfaces.IToolsRepository;
 import utils.ToolRepositoryException;
 
 import java.util.Collection;
@@ -12,7 +12,7 @@ public class ToolRepositoryFactory {
     @FunctionalInterface
     public interface IToolRepositoryFactory {
 
-         IToolRepository create(String location, Map<String, Object> config) throws ToolRepositoryException;
+         IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException;
 
     }
 
@@ -30,8 +30,8 @@ public class ToolRepositoryFactory {
         FACTORIES.remove(factory);
     }
 
-    public static IToolRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
-        IToolRepository repository;
+    public static IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
+        IToolsRepository repository;
 
         for(IToolRepositoryFactory factory : FACTORIES){
             repository = factory.create(location, config);
@@ -40,7 +40,7 @@ public class ToolRepositoryFactory {
                 return repository;
         }
 
-        throw new ToolRepositoryException("Could not find factory to create ToolRepository for location " + location + "!");
+        throw new ToolRepositoryException("Could not find factory to create ToolsRepository for location " + location + "!");
     }
 
 }
