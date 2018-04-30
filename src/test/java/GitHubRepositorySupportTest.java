@@ -3,6 +3,7 @@ import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsReposito
 import pt.isel.ngspipes.tool_descriptor.interfaces.tool.IToolDescriptor;
 import utils.ToolRepositoryException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
@@ -34,6 +35,7 @@ public class GitHubRepositorySupportTest {
         try{
             GithubToolsRepository repo = new GithubToolsRepository(location, null);
             IToolDescriptor toolDescriptor = repo.get(name);
+            assertEquals(2, toolDescriptor.getExecutionContexts().size());
         } catch (ToolRepositoryException e) {
             fail("Shouldn't generate exception.");
         }

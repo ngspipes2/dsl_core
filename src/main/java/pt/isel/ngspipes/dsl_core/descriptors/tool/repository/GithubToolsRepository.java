@@ -6,6 +6,8 @@ import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.HttpUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.SupportedRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
+import pt.isel.ngspipes.tool_descriptor.implementations.tool.ToolDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.configurator.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.tool.IToolDescriptor;
 import utils.ToolRepositoryException;
 
@@ -80,11 +82,14 @@ public class GithubToolsRepository extends ToolsRepository {
                 break;
             }
         }
-        uri = accessLocation + "/" + name + "/" + descriptorName;
+        uri = accessLocation + "/" + name;
+        String uriTool = uri + "/" + descriptorName;
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
-        String content = HttpUtils.getContent(uri);
+        String content = HttpUtils.getContent(uriTool);
         try {
-            IToolDescriptor toolDescriptor = ToolsDescriptorsFactoryUtils.getToolDescriptor(content, type);
+            ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.getToolDescriptor(content, type);
+            Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(uri);
+            toolDescriptor.setExecutionContexts(executionContextDescriptors);
             return toolDescriptor;
         } catch (IOException e) {
             throw new ToolRepositoryException("Error loading " + name + " tool descriptor", e);
@@ -93,21 +98,39 @@ public class GithubToolsRepository extends ToolsRepository {
 
     @Override
     public void update(IToolDescriptor entity) throws ToolRepositoryException {
-
+        throw new ToolRepositoryException("Not supported update operation");
     }
 
     @Override
     public void insert(IToolDescriptor entity) throws ToolRepositoryException {
-
+        throw new ToolRepositoryException("Not supported insert operation");
     }
 
     @Override
     public void delete(String id) throws ToolRepositoryException {
-
+        throw new ToolRepositoryException("Not supported delete operation");
     }
 
 
 
+
+    private Collection<IExecutionContextDescriptor> getExecutionContexts(String uri) throws IOException {
+        Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
+        uri += "/execution_contexts";
+        String uriApi = uri.replace(accessLocation, apiLocation) + PARAMETER_API_QUERY;
+        Collection<String> names = HttpUtils.getJsonFieldsValuesFromArray(uriApi, NAMES_KEY);
+        String uriCtx = "";
+
+        for (String name: names) {
+            uriCtx = uri + "/" + name;
+            String type = IOUtils.getExtensionFromFilePath(name);
+            String content = HttpUtils.getContent(uriCtx);
+            IExecutionContextDescriptor context = ToolsDescriptorsFactoryUtils.getExecutionContextDescriptor(content, type);
+            contexts.add(context);
+        }
+
+        return contexts;
+    }
 
     private void load() {
         SupportedRepository supportedRepository = getAssociatedSupportedRepositoryInfo(location, REPO_SUPPORT_LABEL);

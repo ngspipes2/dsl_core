@@ -1,7 +1,7 @@
-import implementations.SupportedRepository;
 import org.junit.Test;
-import utils.RepositoryException;
-import utils.Util;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.SupportedRepository;
+import utils.ToolRepositoryException;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -19,10 +19,10 @@ public class LoadSupportedRepositoriesTest {
         //Act
         try {
             Collection<SupportedRepository> supportedRepositories = new LinkedList<>();
-            supportedRepositories.add(Util.getRepositoriesSupportedData("Github"));
-            supportedRepositories.add(Util.getRepositoriesSupportedData("UriBased"));
-            supportedRepositories.add(Util.getRepositoriesSupportedData("LocalLinux"));
-            supportedRepositories.add(Util.getRepositoriesSupportedData("LocalWindows"));
+            supportedRepositories.add(IOUtils.getRepositoriesSupportedData("Github"));
+            supportedRepositories.add(IOUtils.getRepositoriesSupportedData("UriBased"));
+            supportedRepositories.add(IOUtils.getRepositoriesSupportedData("LocalLinux"));
+            supportedRepositories.add(IOUtils.getRepositoriesSupportedData("LocalWindows"));
 
             //Assert
             for (SupportedRepository supportedRepo : supportedRepositories) {
@@ -30,7 +30,7 @@ public class LoadSupportedRepositoriesTest {
             }
             assertEquals(expected, supportedRepositories.size());
 
-        } catch (RepositoryException e) {
+        } catch (ToolRepositoryException e) {
             fail("Should not have thrown any exception");
         }
     }
@@ -41,12 +41,12 @@ public class LoadSupportedRepositoriesTest {
 
         //Act
         try {
-            SupportedRepository supportedRepo = Util.getRepositoriesSupportedData("Github1");
+            SupportedRepository supportedRepo = IOUtils.getRepositoriesSupportedData("Github1");
 
             //Assert
             assertNull(supportedRepo);
 
-        } catch (RepositoryException e) {
+        } catch (ToolRepositoryException e) {
             fail("Should not have thrown any exception");
         }
     }
