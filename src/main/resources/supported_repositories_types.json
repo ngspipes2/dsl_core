@@ -11,7 +11,7 @@
     }
   },{
     "LocalLinux" : {
-      "base_location" : "^(.+)/([^/]+)$"
+      "base_location" : "^(?!http)(.+)/([^/]+)$"
     }
   },{
     "LocalWindows" : {
