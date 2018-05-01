@@ -73,8 +73,8 @@ public class GithubToolsRepository extends ToolsRepository {
 
     @Override
     public IToolDescriptor get(String name) throws ToolRepositoryException {
-        String uri = apiLocation + "/" + name + PARAMETER_API_QUERY;
-        Collection<String> names = HttpUtils.getJsonFieldsValuesFromArray(uri, NAMES_KEY);
+        String toolUri = apiLocation + "/" + name + PARAMETER_API_QUERY;
+        Collection<String> names = HttpUtils.getJsonFieldsValuesFromArray(toolUri, NAMES_KEY);
         String descriptorName = "";
         for (String currName: names) {
             if(currName.contains(DESCRIPTOR_FILE_NAME)) {
@@ -82,13 +82,13 @@ public class GithubToolsRepository extends ToolsRepository {
                 break;
             }
         }
-        uri = accessLocation + "/" + name;
-        String uriTool = uri + "/" + descriptorName;
+        toolUri = accessLocation + "/" + name;
+        String toolDescriptorUri = toolUri + "/" + descriptorName;
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
-        String content = HttpUtils.getContent(uriTool);
+        String content = HttpUtils.getContent(toolDescriptorUri);
         try {
             ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.getToolDescriptor(content, type);
-            Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(uri);
+            Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolUri);
             toolDescriptor.setExecutionContexts(executionContextDescriptors);
             return toolDescriptor;
         } catch (IOException e) {

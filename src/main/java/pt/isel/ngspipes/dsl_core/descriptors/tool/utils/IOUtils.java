@@ -9,6 +9,8 @@ import utils.ToolRepositoryException;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Collection;
+import java.util.LinkedList;
 
 public class IOUtils {
 
@@ -35,6 +37,39 @@ public class IOUtils {
     }
 
 
+    public static Collection<String> getDirectoryFilesName(String path) {
+        Collection<String> names = new LinkedList<>();
+        File folder = new File(path);
+        File[] listOfFiles = folder.listFiles();
+
+        for (File file: listOfFiles) {
+            if (file.isFile()) {
+                names.add(file.getName());
+            }
+        }
+         return names;
+    }
+
+    public static Collection<String> getSubDirectoriesName(String path) {
+        Collection<String> names = new LinkedList<>();
+        File folder = new File(path);
+        File[] listOfFiles = folder.listFiles();
+
+        for (File file: listOfFiles) {
+            if (file.isDirectory()) {
+                names.add(file.getName());
+            }
+        }
+        return names;
+    }
+
+    public static String getContent(String path) throws IOException {
+        if(new File(path).exists()) {
+            return readContent(path);
+        }
+        return null;
+    }
+
     public static void write(String info, String fileName) throws IOException {
         PrintWriter writer = null;
 
@@ -51,6 +86,10 @@ public class IOUtils {
     public static String read(String filePath) throws IOException {
         if(!new File(filePath).exists())
             filePath = getAbsolutePath(filePath);
+        return readContent(filePath);
+    }
+
+    private static String readContent(String filePath) throws IOException {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
         String str;
