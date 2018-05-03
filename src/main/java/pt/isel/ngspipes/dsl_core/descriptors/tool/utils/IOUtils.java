@@ -1,12 +1,5 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import utils.ToolRepositoryException;
-
 import java.io.*;
 import java.net.URL;
 import java.util.Collection;
@@ -14,28 +7,10 @@ import java.util.LinkedList;
 
 public class IOUtils {
 
-    public static SupportedRepository getRepositoriesSupportedData(String nodeName) throws ToolRepositoryException {
-        URL path = ClassLoader.getSystemClassLoader().getResource("./supported_repositories_types.json");
-        JsonParser jsonParser = null;
-        try {
-            jsonParser = new JsonFactory().createParser(new File(path.getPath()));
-            ObjectMapper mapper = new ObjectMapper(new JsonFactory());
-            MappingIterator<JsonNode> rootNode = mapper.readValues(jsonParser, JsonNode.class);
-
-            if(rootNode.hasNext()){
-                for (JsonNode node : rootNode.next().findValues(nodeName)) {
-                    jsonParser = new JsonFactory().createParser(node.toString());
-
-                    MappingIterator<SupportedRepository> supportedRepositories = mapper.readValues(jsonParser, SupportedRepository.class);
-                    return supportedRepositories.hasNext() ? supportedRepositories.next() : null;
-                }
-            }
-        } catch (IOException e) {
-            throw new ToolRepositoryException("Couldn't getAssociatedSupportedRepositoryInfo repository", e);
-        }
-        return null;
+    public static boolean canLoadDirectory(String path) {
+        File file = new File(path);
+        return file.exists() && file.isDirectory();
     }
-
 
     public static boolean canLoadFile(String filePath) {
         File file = new File(filePath);

@@ -9,13 +9,5 @@
     "UriBased" : {
       "base_location" : "https://"
     }
-  },{
-    "LocalLinux" : {
-      "base_location" : "^(?!http)(.+)/([^/]+)$"
-    }
-  },{
-    "LocalWindows" : {
-      "base_location" : "([a-zA-Z]:)(\\\\[a-zA-Z0-9_.-]+)+\\\\?"
-    }
   }
 ]

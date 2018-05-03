@@ -1,8 +1,8 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import implementations.ToolsRepository;
+import interfaces.IToolsRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.SupportedRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
@@ -14,14 +14,23 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
-import static pt.isel.ngspipes.dsl_core.descriptors.tool.utils.RepositoryValidation.getAssociatedSupportedRepositoryInfo;
 
 public class LocalToolsRepository extends ToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
-    private static final String REPO_SUPPORT_LABEL_WIN = "LocalWindows";
-    private static final String REPO_SUPPORT_LABEL_LX = "LocalLinux";
+
+
+    // IMPLEMENTATION OF IToolRepositoryFactory
+    public static IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
+        if(!verifyLocation(location))
+            throw new ToolRepositoryException("Can't load location " + location);
+        return new LocalToolsRepository(location, config);
+    }
+
+    private static boolean verifyLocation(String location) {
+        return IOUtils.canLoadDirectory(location);
+    }
 
     public LocalToolsRepository(String location, Map<String, Object> config) {
         super(location, config);
@@ -109,10 +118,6 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
     private void load() {
-        SupportedRepository supportedRepositoryWindows = getAssociatedSupportedRepositoryInfo(location, REPO_SUPPORT_LABEL_WIN);
-        SupportedRepository supportedRepositoryLinux = getAssociatedSupportedRepositoryInfo(location, REPO_SUPPORT_LABEL_LX);
-        if(supportedRepositoryWindows == null && supportedRepositoryLinux == null)
-            throw new ToolRepositoryException("Not supported repository");
         if(!location.endsWith("/"))
                 location += "/";
     }

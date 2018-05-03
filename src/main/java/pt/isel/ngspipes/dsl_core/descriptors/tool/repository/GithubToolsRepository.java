@@ -4,8 +4,8 @@ import implementations.ToolsRepository;
 import interfaces.IToolsRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.HttpUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.SupportedRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.support.ConfigSupportRepository;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
@@ -16,35 +16,36 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
-import static pt.isel.ngspipes.dsl_core.descriptors.tool.utils.RepositoryValidation.getAssociatedSupportedRepositoryInfo;
-
 public class GithubToolsRepository extends ToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String NAMES_KEY = "name";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
-    private static final String REPO_SUPPORT_LABEL = "Github";
     private static final String PARAMETER_API_QUERY = "?ref=master";
     private static final String IGNORE_NAME = "LICENSE";
 
     // IMPLEMENTATION OF IToolRepositoryFactory
     public static IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
-        if(!verifyLocation(location, config))
+        if(!verifyLocation(location))
             return null;
         return new GithubToolsRepository(location, config);
     }
 
-    private static boolean verifyLocation(String location, Map<String, Object> config) {
-        try {
-            SupportedRepository supportedRepository = getAssociatedSupportedRepositoryInfo(location, REPO_SUPPORT_LABEL);
-            if(supportedRepository != null) {
-                String apiLocation =  location.replace(supportedRepository.getBase_location(), supportedRepository.getApi_location());
+    private static boolean verifyLocation(String location) {
+            if(isGithuUri(location)) {
+                String apiLocation =  location.replace( ConfigSupportRepository.github_base_location,
+                        ConfigSupportRepository.github_api_location);
                 apiLocation = apiLocation + "/contents";
                 if(HttpUtils.canConnect(apiLocation))
                     return true;
+                else
+                    throw new ToolRepositoryException("Can't load uri " + location);
             }
-        } catch(ToolRepositoryException exp) {}
         return false;
+    }
+
+    private static boolean isGithuUri(String location) {
+        return location.startsWith(ConfigSupportRepository.github_base_location);
     }
 
 
@@ -141,23 +142,20 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     private void load() {
-        SupportedRepository supportedRepository = getAssociatedSupportedRepositoryInfo(location, REPO_SUPPORT_LABEL);
-        if(supportedRepository == null)
-            throw new ToolRepositoryException("Not supported repository");
-        setAccessLocation(supportedRepository);
-        setApiLocation(supportedRepository);
+        setAccessLocation();
+        setApiLocation();
     }
 
-    private void setAccessLocation(SupportedRepository supportedRepository) {
-        if(supportedRepository.getAccess_location() != null && !supportedRepository.getAccess_location().isEmpty()) {
-            accessLocation = location.replace(supportedRepository.getBase_location(), supportedRepository.getAccess_location());
+    private void setAccessLocation() {
+        if(ConfigSupportRepository.github_access_location != null && !ConfigSupportRepository.github_access_location.isEmpty()) {
+            accessLocation = location.replace(ConfigSupportRepository.github_base_location, ConfigSupportRepository.github_access_location);
         }
         accessLocation = accessLocation + "/master";
     }
 
-    private void setApiLocation(SupportedRepository supportedRepository) {
-        if(supportedRepository.getAccess_location() != null && !supportedRepository.getApi_location().isEmpty()) {
-            apiLocation = location.replace(supportedRepository.getBase_location(), supportedRepository.getApi_location());
+    private void setApiLocation() {
+        if(ConfigSupportRepository.github_api_location != null && !ConfigSupportRepository.github_api_location.isEmpty()) {
+            apiLocation = location.replace(ConfigSupportRepository.github_base_location, ConfigSupportRepository.github_api_location);
         }
         apiLocation = apiLocation + "/contents";
     }

@@ -1,6 +1,6 @@
 import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.SupportedRepository;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.support.SupportRepository;
 import utils.ToolRepositoryException;
 
 import java.util.Collection;
@@ -18,14 +18,14 @@ public class LoadSupportedRepositoriesTest {
 
         //Act
         try {
-            Collection<SupportedRepository> supportedRepositories = new LinkedList<>();
+            Collection<SupportRepository> supportedRepositories = new LinkedList<>();
             supportedRepositories.add(IOUtils.getRepositoriesSupportedData("Github"));
             supportedRepositories.add(IOUtils.getRepositoriesSupportedData("UriBased"));
             supportedRepositories.add(IOUtils.getRepositoriesSupportedData("LocalLinux"));
             supportedRepositories.add(IOUtils.getRepositoriesSupportedData("LocalWindows"));
 
             //Assert
-            for (SupportedRepository supportedRepo : supportedRepositories) {
+            for (SupportRepository supportedRepo : supportedRepositories) {
                 assertNotNull(supportedRepo);
             }
             assertEquals(expected, supportedRepositories.size());
@@ -41,7 +41,7 @@ public class LoadSupportedRepositoriesTest {
 
         //Act
         try {
-            SupportedRepository supportedRepo = IOUtils.getRepositoriesSupportedData("Github1");
+            SupportRepository supportedRepo = IOUtils.getRepositoriesSupportedData("Github1");
 
             //Assert
             assertNull(supportedRepo);
