@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class PipelineRepositoryFactory {
+public class PipelinesRepositoryFactory {
 
     @FunctionalInterface
     public interface IPipelinesRepositoryFactory {
