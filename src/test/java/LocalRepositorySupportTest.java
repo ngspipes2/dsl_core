@@ -1,6 +1,6 @@
 import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.LocalToolsRepository;
-import pt.isel.ngspipes.tool_descriptor.interfaces.tool.IToolDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import utils.ToolRepositoryException;
 
 import static org.junit.Assert.assertEquals;

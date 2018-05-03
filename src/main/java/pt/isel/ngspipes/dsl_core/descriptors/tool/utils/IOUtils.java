@@ -37,6 +37,11 @@ public class IOUtils {
     }
 
 
+    public static boolean canLoadFile(String filePath) {
+        File file = new File(filePath);
+        return file.exists() && file.isFile();
+    }
+
     public static Collection<String> getDirectoryFilesName(String path) {
         Collection<String> names = new LinkedList<>();
         File folder = new File(path);

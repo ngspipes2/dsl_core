@@ -4,9 +4,9 @@ import implementations.ToolsRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.SupportedRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
-import pt.isel.ngspipes.tool_descriptor.implementations.tool.ToolDescriptor;
-import pt.isel.ngspipes.tool_descriptor.interfaces.configurator.IExecutionContextDescriptor;
-import pt.isel.ngspipes.tool_descriptor.interfaces.tool.IToolDescriptor;
+import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import utils.ToolRepositoryException;
 
 import java.io.IOException;
@@ -59,6 +59,7 @@ public class LocalToolsRepository extends ToolsRepository {
             ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.getToolDescriptor(content, type);
             Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolPath);
             toolDescriptor.setExecutionContexts(executionContextDescriptors);
+            toolDescriptor.setLogo(getLogo(toolPath));
             return toolDescriptor;
         } catch (IOException e) {
             throw new ToolRepositoryException("Error loading " + name + " tool descriptor", e);
@@ -82,6 +83,13 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
 
+
+    private String getLogo(String toolPath) {
+        StringBuilder logoUri = new StringBuilder(toolPath);
+        logoUri.append("/")
+                .append(LOGO_FILE_NAME);
+        return IOUtils.canLoadFile(logoUri.toString()) ? logoUri.toString() : null;
+    }
 
     private Collection<IExecutionContextDescriptor> getExecutionContexts(String path) throws IOException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
