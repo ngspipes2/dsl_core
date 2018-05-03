@@ -24,7 +24,7 @@ public class LocalToolsRepository extends ToolsRepository {
     // IMPLEMENTATION OF IToolRepositoryFactory
     public static IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
         if(!verifyLocation(location))
-            throw new ToolRepositoryException("Can't load location " + location);
+            throw new ToolRepositoryException("Can't load path " + location);
         return new LocalToolsRepository(location, config);
     }
 
@@ -118,6 +118,8 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
     private void load() {
+        if(!IOUtils.canLoadDirectory(location))
+            throw new ToolRepositoryException("Cant load path " + location);
         if(!location.endsWith("/"))
                 location += "/";
     }

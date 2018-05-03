@@ -142,6 +142,8 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     private void load() {
+        if(!HttpUtils.canConnect(location))
+            throw new ToolRepositoryException("Cant load uri " + location);
         setAccessLocation();
         setApiLocation();
     }
