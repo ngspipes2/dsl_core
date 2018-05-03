@@ -7,10 +7,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class ToolRepositoryFactory {
+public class ToolsRepositoryFactory {
 
     @FunctionalInterface
-    public interface IToolRepositoryFactory {
+    public interface IToolsRepositoryFactory {
 
          IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException;
 
@@ -18,22 +18,22 @@ public class ToolRepositoryFactory {
 
 
 
-    private static final Collection<IToolRepositoryFactory> FACTORIES = new LinkedList<>();
+    private static final Collection<IToolsRepositoryFactory> FACTORIES = new LinkedList<>();
 
 
 
-    public static void registerFactory(IToolRepositoryFactory factory) {
+    public static void registerFactory(IToolsRepositoryFactory factory) {
         FACTORIES.add(factory);
     }
 
-    public static void deregisterFactory(IToolRepositoryFactory factory) {
+    public static void deregisterFactory(IToolsRepositoryFactory factory) {
         FACTORIES.remove(factory);
     }
 
     public static IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
         IToolsRepository repository;
 
-        for(IToolRepositoryFactory factory : FACTORIES){
+        for(IToolsRepositoryFactory factory : FACTORIES){
             repository = factory.create(location, config);
 
             if(repository != null)
