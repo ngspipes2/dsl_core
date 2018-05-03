@@ -12,3 +12,5 @@ project(':pipeline_descriptor').projectDir = new File(settingsDir, '../dsl_pipel
 include ':pipeline_repository'
 project(':pipeline_repository').projectDir = new File(settingsDir, '../dsl_pipeline_repository')
 
+include ':dsl_parser'
+project(':dsl_parser').projectDir = new File(settingsDir, '../dsl_parser')

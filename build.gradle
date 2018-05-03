@@ -19,4 +19,5 @@ dependencies {
     compile project(':tool_repository')
     compile project(':pipeline_descriptor')
     compile project(':pipeline_repository')
+    compile project(':dsl_parser')
 }
