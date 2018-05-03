@@ -29,7 +29,7 @@ public class GitHubRepositorySupportTest {
     public void githubRepositoryGetToolTest() {
         //Arrange
         String location = "https://github.com/ngspipes2/tools_support";
-        String name = "Blast";
+        String name = "Trimmomatic";
 
         // Act
         try{

@@ -11,11 +11,11 @@ public class JacksonParameterDescriptor extends ParameterDescriptor {
 
     @JsonGetter("dependent_values")
     @Override
-    public String[] getDependentValues() { return super.getDependentValues(); }
+    public Collection<String> getDependentValues() { return super.getDependentValues(); }
 
     @JsonSetter("dependent_values")
     @Override
-    public void setDependentValues(String[] dependentValues) { super.setDependentValues(dependentValues); }
+    public void setDependentValues(Collection<String> dependentValues) { super.setDependentValues(dependentValues); }
 
     @JsonGetter("sub_parameters")
     @Override
