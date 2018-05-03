@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.jackson_entities.JacksonCommandDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.jackson_entities.JacksonParameterDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.OutputDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ParameterDescriptor;
@@ -60,7 +61,7 @@ public class ToolsDescriptorsFactoryUtils {
 
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
         resolver.addMapping(ICommandDescriptor.class, JacksonCommandDescriptor.class);
-        resolver.addMapping(IParameterDescriptor.class, ParameterDescriptor.class);
+        resolver.addMapping(IParameterDescriptor.class, JacksonParameterDescriptor.class);
         resolver.addMapping(IOutputDescriptor.class, OutputDescriptor.class);
         resolver.addMapping(IExecutionContextDescriptor.class, ExecutionContextDescriptor.class);
 
