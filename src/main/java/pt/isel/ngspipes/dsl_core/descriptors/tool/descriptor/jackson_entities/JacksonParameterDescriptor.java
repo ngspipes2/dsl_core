@@ -2,7 +2,7 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.entities;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import pt.isel.ngspipes.tool_descriptor.implementations.tool.ParameterDescriptor;
+import pt.isel.ngspipes.tool_descriptor.implementations.ParameterDescriptor;
 
 public class JacksonParameterDescriptor extends ParameterDescriptor {
 
