@@ -12,7 +12,7 @@ public class ToolsRepositoryFactory {
     @FunctionalInterface
     public interface IToolsRepositoryFactory {
 
-         IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException;
+         IToolsRepository create(String location, Map<String, Object> config);
 
     }
 

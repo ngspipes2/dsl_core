@@ -25,13 +25,9 @@ public class HttpUtils {
             int responseCode = connection.getResponseCode();
             return (responseCode >= 200 && responseCode < 400);
         } catch (IOException e) {
-            throw new ToolRepositoryException("Not supported to connect to location:" + location, e);
+            throw new ToolRepositoryException("Not supported to connect to location: " + location, e);
         }
     }
-/*
-    public static <T> String getStringFrom(String uri, String fieldname, BiFunction<String, String, T> func) {
-        return func.apply(uri, fieldname).
-    }*/
 
     public static String getContent(String uri) throws ToolRepositoryException {
         try {

@@ -25,26 +25,24 @@ public class GithubToolsRepository extends ToolsRepository {
     private static final String IGNORE_NAME = "LICENSE";
 
     // IMPLEMENTATION OF IToolRepositoryFactory
-    public static IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
+    public static IToolsRepository create(String location, Map<String, Object> config) {
         if(!verifyLocation(location))
             return null;
         return new GithubToolsRepository(location, config);
     }
 
     private static boolean verifyLocation(String location) {
-            if(isGithuUri(location)) {
-                String apiLocation =  location.replace( ConfigSupportRepository.github_base_location,
-                        ConfigSupportRepository.github_api_location);
-                apiLocation = apiLocation + "/contents";
-                if(HttpUtils.canConnect(apiLocation))
-                    return true;
-                else
-                    throw new ToolRepositoryException("Can't load uri " + location);
-            }
+        if(isGithubUri(location)) {
+            String apiLocation =  location.replace( ConfigSupportRepository.github_base_location,
+                    ConfigSupportRepository.github_api_location);
+            apiLocation = apiLocation + "/contents";
+            if(HttpUtils.canConnect(apiLocation))
+                return true;
+        }
         return false;
     }
 
-    private static boolean isGithuUri(String location) {
+    private static boolean isGithubUri(String location) {
         return location.startsWith(ConfigSupportRepository.github_base_location);
     }
 

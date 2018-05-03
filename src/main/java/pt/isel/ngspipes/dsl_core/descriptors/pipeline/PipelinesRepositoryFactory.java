@@ -12,7 +12,7 @@ public class PipelinesRepositoryFactory {
     @FunctionalInterface
     public interface IPipelinesRepositoryFactory {
 
-        IPipelinesRepository create(String location, Map<String, Object> config) throws PipelineRepositoryException;
+        IPipelinesRepository create(String location, Map<String, Object> config);
 
     }
 
