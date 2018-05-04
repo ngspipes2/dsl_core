@@ -1,7 +1,5 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import utils.ToolRepositoryException;
 
 import java.io.BufferedReader;
@@ -10,8 +8,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Collection;
-import java.util.LinkedList;
 
 public class HttpUtils {
 
@@ -37,41 +33,6 @@ public class HttpUtils {
             throw new ToolRepositoryException("Error loading content", e);
         }
     }
-
-    public static JsonNode getJsonNodeFrom(String uri) throws ToolRepositoryException {
-        try {
-            String content = getContent(uri);
-            return new ObjectMapper().readTree(content);
-        } catch (IOException e) {
-            throw new ToolRepositoryException("Error loading content", e);
-        }
-    }
-
-    public static JsonNode getJsonFieldFromNode(String uri, String fieldname) throws ToolRepositoryException {
-        JsonNode jsonNode = getJsonNodeFrom(uri);
-        if(fieldname != null || !fieldname.isEmpty())
-            return jsonNode.get(fieldname);
-        return jsonNode;
-    }
-
-    public static Collection<String> getJsonFieldsValuesFromArray(String uri, String fieldName) throws ToolRepositoryException {
-        try {
-            Collection<String> fieldValues = new LinkedList<>();
-            HttpURLConnection connection = getConnection(uri);
-            String content = readStream(connection);
-            JsonNode jsonNodeArr = new ObjectMapper().readTree(content);
-            if(jsonNodeArr.isArray()) {
-                for (JsonNode jsonNode : jsonNodeArr) {
-                    String currValue = jsonNode.get(fieldName).textValue();
-                    fieldValues.add(currValue);
-                }
-            }
-            return fieldValues;
-        } catch (IOException e) {
-            throw new ToolRepositoryException("Error loading content", e);
-        }
-    }
-
 
     public static String readStream(URLConnection conn) throws IOException{
         BufferedReader br = null;

@@ -3,8 +3,9 @@ import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsReposito
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import utils.ToolRepositoryException;
 
+import java.util.Collection;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 public class GitHubRepositorySupportTest {
@@ -29,13 +30,30 @@ public class GitHubRepositorySupportTest {
     public void githubRepositoryGetToolTest() {
         //Arrange
         String location = "https://github.com/ngspipes2/tools_support";
-        String name = "Blast";
+        String name = "Trimmomatic";
 
         // Act
         try{
             GithubToolsRepository repo = new GithubToolsRepository(location, null);
             IToolDescriptor toolDescriptor = repo.get(name);
             assertEquals(2, toolDescriptor.getExecutionContexts().size());
+        } catch (ToolRepositoryException e) {
+            fail("Shouldn't generate exception.");
+        }
+
+        //Assert
+    }
+
+    @Test
+    public void githubRepositoryGetAllToolTest() {
+        //Arrange
+        String location = "https://github.com/ngspipes2/tools_support";
+
+        // Act
+        try{
+            GithubToolsRepository repo = new GithubToolsRepository(location, null);
+            Collection<IToolDescriptor> toolDescriptors = repo.getAll();
+            assertEquals(3, toolDescriptors.size());
         } catch (ToolRepositoryException e) {
             fail("Shouldn't generate exception.");
         }

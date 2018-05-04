@@ -3,8 +3,7 @@ import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.LocalToolsRepositor
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import utils.ToolRepositoryException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class LocalRepositorySupportTest {
 
@@ -38,17 +37,6 @@ public class LocalRepositorySupportTest {
         } catch(ToolRepositoryException e) {
             fail("Slouhdn't throw exception");
         }
-
-        //Assert
-    }
-
-    @Test(expected = ToolRepositoryException.class)
-    public void localRepositorySupportWithBadLocationTest() {
-        //Arrange
-        String location = "https://github1.com/ngspipes/tools";
-
-        // Act
-        LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
 
         //Assert
     }

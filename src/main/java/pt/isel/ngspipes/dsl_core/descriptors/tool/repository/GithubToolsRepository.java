@@ -2,6 +2,7 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import implementations.ToolsRepository;
 import interfaces.IToolsRepository;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.GithubUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.HttpUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
@@ -22,7 +23,6 @@ public class GithubToolsRepository extends ToolsRepository {
     private static final String NAMES_KEY = "name";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
     private static final String PARAMETER_API_QUERY = "?ref=master";
-    private static final String IGNORE_NAME = "LICENSE";
 
     // IMPLEMENTATION OF IToolRepositoryFactory
     public static IToolsRepository create(String location, Map<String, Object> config) {
@@ -35,7 +35,7 @@ public class GithubToolsRepository extends ToolsRepository {
         if(isGithubUri(location)) {
             String apiLocation =  location.replace( ConfigSupportRepository.github_base_location,
                     ConfigSupportRepository.github_api_location);
-            apiLocation = apiLocation + "/contents";
+            apiLocation += "/contents";
             if(HttpUtils.canConnect(apiLocation))
                 return true;
         }
@@ -60,8 +60,7 @@ public class GithubToolsRepository extends ToolsRepository {
     @Override
     public Collection<IToolDescriptor> getAll() throws ToolRepositoryException {
 
-        Collection<String> names = HttpUtils.getJsonFieldsValuesFromArray(apiLocation, NAMES_KEY);
-        names.remove(IGNORE_NAME);
+        Collection<String> names = GithubUtils.getFoldersNames(apiLocation, NAMES_KEY);
         Collection<IToolDescriptor> tools = new LinkedList<>();
 
         for (String name: names)
@@ -73,7 +72,7 @@ public class GithubToolsRepository extends ToolsRepository {
     @Override
     public IToolDescriptor get(String name) throws ToolRepositoryException {
         String toolUri = apiLocation + "/" + name + PARAMETER_API_QUERY;
-        Collection<String> names = HttpUtils.getJsonFieldsValuesFromArray(toolUri, NAMES_KEY);
+        Collection<String> names = GithubUtils.getFilesNames(toolUri, NAMES_KEY);
         String descriptorName = "";
         for (String currName: names) {
             if(currName.contains(DESCRIPTOR_FILE_NAME)) {
@@ -82,7 +81,7 @@ public class GithubToolsRepository extends ToolsRepository {
             }
         }
         toolUri = accessLocation + "/" + name;
-        String toolDescriptorUri = toolUri + "/" + descriptorName;
+        String toolDescriptorUri = toolUri + "/"+ descriptorName;
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
         String content = HttpUtils.getContent(toolDescriptorUri);
         try {
@@ -98,34 +97,32 @@ public class GithubToolsRepository extends ToolsRepository {
 
     @Override
     public void update(IToolDescriptor entity) throws ToolRepositoryException {
-        throw new ToolRepositoryException("Not supported update operation");
+        throw new ToolRepositoryException("Update operation not supported");
     }
 
     @Override
     public void insert(IToolDescriptor entity) throws ToolRepositoryException {
-        throw new ToolRepositoryException("Not supported insert operation");
+        throw new ToolRepositoryException("Insert operation not supported");
     }
 
     @Override
     public void delete(String id) throws ToolRepositoryException {
-        throw new ToolRepositoryException("Not supported delete operation");
+        throw new ToolRepositoryException("Delete operation not supported");
     }
 
 
 
 
     private String getLogo(String toolUri) {
-        StringBuilder logoUri = new StringBuilder(toolUri);
-        logoUri.append("/")
-                .append(LOGO_FILE_NAME);
-        return HttpUtils.canConnect(logoUri.toString()) ? logoUri.toString() : null;
+        String logoUri = toolUri + "/" + LOGO_FILE_NAME;
+        return HttpUtils.canConnect(logoUri) ? logoUri : null;
     }
 
     private Collection<IExecutionContextDescriptor> getExecutionContexts(String uri) throws IOException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
-        uri += "/execution_contexts";
+        uri += "/execution_contexts" ;
         String uriApi = uri.replace(accessLocation, apiLocation) + PARAMETER_API_QUERY;
-        Collection<String> names = HttpUtils.getJsonFieldsValuesFromArray(uriApi, NAMES_KEY);
+        Collection<String> names = GithubUtils.getFilesNames(uriApi, NAMES_KEY);
         String uriCtx = "";
 
         for (String name: names) {
@@ -147,16 +144,12 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     private void setAccessLocation() {
-        if(ConfigSupportRepository.github_access_location != null && !ConfigSupportRepository.github_access_location.isEmpty()) {
-            accessLocation = location.replace(ConfigSupportRepository.github_base_location, ConfigSupportRepository.github_access_location);
-        }
+        accessLocation = location.replace(ConfigSupportRepository.github_base_location, ConfigSupportRepository.github_access_location);
         accessLocation = accessLocation + "/master";
     }
 
     private void setApiLocation() {
-        if(ConfigSupportRepository.github_api_location != null && !ConfigSupportRepository.github_api_location.isEmpty()) {
-            apiLocation = location.replace(ConfigSupportRepository.github_base_location, ConfigSupportRepository.github_api_location);
-        }
+        apiLocation = location.replace(ConfigSupportRepository.github_base_location, ConfigSupportRepository.github_api_location);
         apiLocation = apiLocation + "/contents";
     }
 }
