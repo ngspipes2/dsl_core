@@ -1,5 +1,7 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
 
+import utils.ToolRepositoryException;
+
 import java.io.*;
 import java.net.URL;
 import java.util.Collection;
@@ -9,6 +11,8 @@ public class IOUtils {
 
     public static boolean canLoadDirectory(String path) {
         File file = new File(path);
+        if (file == null)
+            throw new ToolRepositoryException("Wanted directory doesn't exist");
         return file.exists() && file.isDirectory();
     }
 
@@ -69,27 +73,21 @@ public class IOUtils {
         return readContent(filePath);
     }
 
-    private static String readContent(String filePath) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = null;
-        String str;
+    public static void copyFile(String sourcePath, String destPath) throws IOException {
+        InputStream is = null;
+        OutputStream os = null;
         try {
-            br = new BufferedReader(new FileReader(filePath));
-            while((str = br.readLine()) != null) {
-                sb.append(str);
-                sb.append("\n");
+            is = new FileInputStream(new File(sourcePath));
+            os = new FileOutputStream(new File(destPath));
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
             }
         } finally {
-            if (br != null)
-                br.close();
+            is.close();
+            os.close();
         }
-
-        return sb.toString();
-    }
-
-    private static String getAbsolutePath(String fileName){
-        URL s = ClassLoader.getSystemResource(fileName);
-        return s.getPath().substring(1);
     }
 
     public static void copyDirectory(File src, File dst) throws IOException{
@@ -119,5 +117,47 @@ public class IOUtils {
         StringBuilder extension = new StringBuilder(path);
         int lastPointIdx = path.lastIndexOf('.');
         return extension.substring(lastPointIdx + 1);
+    }
+
+    public static void createFolder(String dirPath) {
+        File dirFile = new File(dirPath);
+        if(dirFile == null || !dirFile.exists())
+            dirFile.mkdirs();
+    }
+
+
+    public static void deleteFolder(String dirPath) {
+        File dirFile = new File(dirPath);
+        if(dirFile != null && dirFile.exists()) {
+            for (File file : dirFile.listFiles()) {
+                if(file.isDirectory())
+                    deleteFolder(file.getAbsolutePath());
+                file.delete();
+            }
+            dirFile.delete();
+        }
+    }
+
+    private static String readContent(String filePath) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = null;
+        String str;
+        try {
+            br = new BufferedReader(new FileReader(filePath));
+            while((str = br.readLine()) != null) {
+                sb.append(str);
+                sb.append("\n");
+            }
+        } finally {
+            if (br != null)
+                br.close();
+        }
+
+        return sb.toString();
+    }
+
+    private static String getAbsolutePath(String fileName){
+        URL s = ClassLoader.getSystemResource(fileName);
+        return s.getPath().substring(1);
     }
 }
