@@ -20,16 +20,20 @@ public class ConfigSupportRepository {
     public static String github_api_location;
 
     static {
-        loadSupportedRepositoryInfo();
+        try {
+            loadSupportedRepositoryInfo();
+        } catch (ToolRepositoryException e) {
+            throw new RuntimeException("Error loading Github repository configurations", e);
+        }
     }
 
-    public static void loadSupportedRepositoryInfo() {
+    public static void loadSupportedRepositoryInfo() throws ToolRepositoryException {
         loadGithubSupport();
     }
 
 
 
-    private static void loadGithubSupport() {
+    private static void loadGithubSupport() throws ToolRepositoryException {
         SupportedRepository github = getRepositoriesSupportedData(GITHUB_REPO_SUPPORT_LABEL);
         if(github != null) {
             github_base_location = github.base_location;

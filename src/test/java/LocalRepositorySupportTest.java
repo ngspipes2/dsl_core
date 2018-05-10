@@ -16,11 +16,7 @@ public class LocalRepositorySupportTest {
         String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
         // Act
-        try {
-            LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
-        } catch(ToolRepositoryException e) {
-            fail("Slouhdn't throw exception");
-        }
+        LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
 
         //Assert
     }
@@ -83,7 +79,7 @@ public class LocalRepositorySupportTest {
 
 
     @Test(expected = ToolRepositoryException.class)
-    public void localRepositoryInsertExistentToolTest() {
+    public void localRepositoryInsertExistentToolTest() throws ToolRepositoryException {
         //Arrange
         String name = "Blast";
         String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
@@ -140,7 +136,7 @@ public class LocalRepositorySupportTest {
     }
 
     @Test(expected = ToolRepositoryException.class)
-    public void localRepositoryUpdateNotExistentToolTest() {
+    public void localRepositoryUpdateNotExistentToolTest() throws ToolRepositoryException {
         //Arrange
         String name = "BlastN";
         String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";

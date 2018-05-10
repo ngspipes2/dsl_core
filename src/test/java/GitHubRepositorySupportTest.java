@@ -17,11 +17,7 @@ public class GitHubRepositorySupportTest {
         String location = "https://github.com/ngspipes/tools";
 
         // Act
-        try{
-            GithubToolsRepository repo = new GithubToolsRepository(location, null);
-        } catch (ToolRepositoryException e) {
-            fail("Shouldn't generate exception.");
-        }
+        GithubToolsRepository repo = new GithubToolsRepository(location, null);
 
         //Assert
     }
@@ -60,7 +56,7 @@ public class GitHubRepositorySupportTest {
 
         //Assert
     }
-
+/*
     @Test(expected = ToolRepositoryException.class)
     public void githubRepositorySupportWithBadLocationTest() {
         //Arrange
@@ -70,5 +66,5 @@ public class GitHubRepositorySupportTest {
         GithubToolsRepository repo = new GithubToolsRepository(location, null);
 
         //Assert
-    }
+    }*/
 }

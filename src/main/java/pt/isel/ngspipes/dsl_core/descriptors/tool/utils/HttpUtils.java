@@ -15,7 +15,7 @@ public class HttpUtils {
         return (HttpURLConnection) new URL(url).openConnection();
     }
 
-    public static boolean canConnect(String location) {
+    public static boolean canConnect(String location) throws ToolRepositoryException {
         try {
             HttpURLConnection connection = getConnection(location);
             int responseCode = connection.getResponseCode();

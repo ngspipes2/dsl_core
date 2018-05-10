@@ -9,7 +9,7 @@ import java.util.LinkedList;
 
 public class IOUtils {
 
-    public static boolean canLoadDirectory(String path) {
+    public static boolean canLoadDirectory(String path) throws ToolRepositoryException {
         File file = new File(path);
         if (file == null)
             throw new ToolRepositoryException("Wanted directory doesn't exist");

@@ -34,7 +34,7 @@ public class GithubUtils {
         return getJSONPropertyValueByName(uri, propertyName, "file");
     }
 
-    private static Collection<String> getJSONPropertyValueByName(String uri, String propertyName, String type) {
+    private static Collection<String> getJSONPropertyValueByName(String uri, String propertyName, String type) throws ToolRepositoryException {
         try {
             Collection<String> fieldValues = new LinkedList<>();
             String content = HttpUtils.getContent(uri);
