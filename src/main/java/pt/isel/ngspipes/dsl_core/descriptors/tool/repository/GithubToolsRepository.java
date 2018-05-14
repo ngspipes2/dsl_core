@@ -77,8 +77,8 @@ public class GithubToolsRepository extends ToolsRepository {
         String descriptorName = getDescriptorName(name);
         String toolDescriptorUri = getDescriptorUri(name, descriptorName);
         String content = HttpUtils.getContent(toolDescriptorUri);
+        String type = IOUtils.getExtensionFromFilePath(descriptorName);
         try {
-            String type = IOUtils.getExtensionFromFilePath(descriptorName);
             return createToolDescriptor(name, type, content);
         } catch (IOException e) {
             throw new ToolRepositoryException("Error loading " + name + " tool descriptor", e);
@@ -108,11 +108,10 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     private IToolDescriptor createToolDescriptor(String name, String type, String content) throws IOException, ToolRepositoryException {
-        String toolUri = getAccessToolUri(name);
         ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.createToolDescriptor(content, type);
         Collection<IExecutionContextDescriptor> executionContextDescriptors = createExecutionContexts(name);
         toolDescriptor.setExecutionContexts(executionContextDescriptors);
-        toolDescriptor.setLogo(getLogo(toolUri));
+        toolDescriptor.setLogo(getLogo(name));
         return toolDescriptor;
     }
 
@@ -122,9 +121,10 @@ public class GithubToolsRepository extends ToolsRepository {
         Collection<String> names = GithubUtils.getFilesNames(toolUri, NAMES_KEY);
         for (String currName: names) {
             String type = IOUtils.getExtensionFromFilePath(currName);
-            descriptorName = currName;
+            String currDescriptorName = currName;
             currName = currName.substring(0, currName.indexOf("." + type));
             if(currName.equals(DESCRIPTOR_FILE_NAME)) {
+                descriptorName = currDescriptorName;
                 break;
             }
         }
@@ -147,8 +147,8 @@ public class GithubToolsRepository extends ToolsRepository {
         return accessUri + SEPARATOR + toolName;
     }
 
-    private String getLogo(String toolUri) throws ToolRepositoryException {
-        String logoUri = toolUri + "/" + LOGO_FILE_NAME;
+    private String getLogo(String name) throws ToolRepositoryException {
+        String logoUri = getAccessToolUri(name) + SEPARATOR + LOGO_FILE_NAME;
         return HttpUtils.canConnect(logoUri) ? logoUri : null;
     }
 

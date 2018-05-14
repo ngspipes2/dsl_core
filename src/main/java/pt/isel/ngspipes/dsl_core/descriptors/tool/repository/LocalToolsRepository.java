@@ -75,7 +75,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
         if (!IOUtils.canLoadDirectory(toolPath))
             throw new ToolRepositoryException("Can't find a tool with name: " + entity.getName());
-        
+
         String descriptorName = getDescriptorName(toolPath);
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
         String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
