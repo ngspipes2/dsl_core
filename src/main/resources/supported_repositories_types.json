@@ -1,13 +1,13 @@
 [
   {
     "Github" : {
-      "base_location" : "https://github.com/",
-      "access_location" : "https://raw.githubusercontent.com/",
-      "api_location" : "https://api.github.com/repos/"
+      "base_uri" : "https://github.com/",
+      "access_uri" : "https://raw.githubusercontent.com/",
+      "api_uri" : "https://api.github.com/repos/"
     }
   },{
     "UriBased" : {
-      "base_location" : "https://"
+      "base_uri" : "https://"
     }
   }
 ]

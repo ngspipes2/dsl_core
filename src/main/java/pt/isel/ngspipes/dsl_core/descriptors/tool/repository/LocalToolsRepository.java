@@ -20,6 +20,8 @@ public class LocalToolsRepository extends ToolsRepository {
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
     private static final String DEFAULT_TYPE = "json";
+    private static final String SEPARATOR = "/";
+    private static final String EXECUTION_CONTEXTS_SUB_URI = "/execution_contexts";
 
 
     // IMPLEMENTATION OF IToolRepositoryFactory
@@ -58,7 +60,7 @@ public class LocalToolsRepository extends ToolsRepository {
     public IToolDescriptor get(String name) throws ToolRepositoryException {
         String toolPath = location + name;
         String descriptorName = getDescriptorName(toolPath);
-        String toolDescriptorPath = toolPath + "/" + descriptorName;
+        String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
         try {
             return getToolDescriptor(toolPath, toolDescriptorPath, type);
@@ -71,15 +73,13 @@ public class LocalToolsRepository extends ToolsRepository {
     public void update(IToolDescriptor entity) throws ToolRepositoryException {
         String toolPath = location + entity.getName();
 
-        try {
-            if (!IOUtils.canLoadDirectory(toolPath))
-                throw new ToolRepositoryException("There is already a tool with name: " + entity.getName());
-        } catch(ToolRepositoryException ex) {
-            throw new ToolRepositoryException("Tool name can be updated.");
-        }
+        if (!IOUtils.canLoadDirectory(toolPath))
+            throw new ToolRepositoryException("Can't find a tool with name: " + entity.getName());
+        
         String descriptorName = getDescriptorName(toolPath);
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
-        String toolDescriptorPath = toolPath + "/" + descriptorName;
+        String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
+
         try {
             updateTool(entity, toolPath, type, toolDescriptorPath);
         } catch (IOException e) {
@@ -95,7 +95,7 @@ public class LocalToolsRepository extends ToolsRepository {
            throw new ToolRepositoryException("There is already a tool with name: " + entity.getName());
 
         IOUtils.createFolder(toolPath);
-        String toolDescriptorPath = toolPath + "/" + DESCRIPTOR_FILE_NAME + "." + type;
+        String toolDescriptorPath = toolPath + SEPARATOR + DESCRIPTOR_FILE_NAME + "." + type;
         try {
             insertTool(entity, toolPath, toolDescriptorPath);
         } catch (IOException e) {
@@ -118,7 +118,7 @@ public class LocalToolsRepository extends ToolsRepository {
         Collection<IExecutionContextDescriptor> executionContexts = entity.getExecutionContexts();
         updateExecutionContexts(toolPath, executionContexts);
 
-        IOUtils.copyFile(entity.getLogo(), toolPath + "/Logo.png");
+        IOUtils.copyFile(entity.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
     private void insertTool(IToolDescriptor entity, String toolPath, String toolDescriptorPath) throws IOException, ToolRepositoryException {
@@ -130,12 +130,12 @@ public class LocalToolsRepository extends ToolsRepository {
             throw new ToolRepositoryException("A tool must have at least an execution context");
         writeExecutionContexts(toolPath, executionContexts);
 
-        IOUtils.copyFile(entity.getLogo(), toolPath + "/Logo.png");
+        IOUtils.copyFile(entity.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
     private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException {
         String content = IOUtils.getContent(toolDescriptorPath);
-        ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.getToolDescriptor(content, type);
+        ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.createToolDescriptor(content, type);
         Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolPath);
         toolDescriptor.setExecutionContexts(executionContextDescriptors);
         toolDescriptor.setLogo(getLogo(toolPath));
@@ -143,17 +143,17 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
     private void writeExecutionContexts(String toolPath, Collection<IExecutionContextDescriptor> executionContexts) throws IOException {
-        String dirPath = toolPath + "/execution_contexts";
+        String dirPath = toolPath + EXECUTION_CONTEXTS_SUB_URI;
         IOUtils.createFolder(dirPath);
 
         for (IExecutionContextDescriptor ctx : executionContexts) {
             String currCtx = ToolsDescriptorsFactoryUtils.getExecutionContextDescriptorAsString(ctx, type);
-            IOUtils.write(currCtx, dirPath + "/" + ctx.getName() + "." + type);
+            IOUtils.write(currCtx, dirPath + SEPARATOR + ctx.getName() + "." + type);
         }
     }
 
     private void updateExecutionContexts(String toolPath, Collection<IExecutionContextDescriptor> executionContexts) throws IOException {
-        String executionCtx = toolPath + "/execution_contexts";
+        String executionCtx = toolPath + EXECUTION_CONTEXTS_SUB_URI;
         Collection<String> names = IOUtils.getDirectoryFilesName(executionCtx);
         String pathCtx = "";
 
@@ -190,22 +190,22 @@ public class LocalToolsRepository extends ToolsRepository {
 
     private String getLogo(String toolPath) {
         StringBuilder logoUri = new StringBuilder(toolPath);
-        logoUri.append("/")
+        logoUri.append(SEPARATOR)
                 .append(LOGO_FILE_NAME);
         return IOUtils.canLoadFile(logoUri.toString()) ? logoUri.toString() : null;
     }
 
     private Collection<IExecutionContextDescriptor> getExecutionContexts(String path) throws IOException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
-        path += "/execution_contexts";
+        path += EXECUTION_CONTEXTS_SUB_URI;
         Collection<String> names = IOUtils.getDirectoryFilesName(path);
         String pathCtx = "";
 
         for (String name: names) {
-            pathCtx = path + "/" + name;
+            pathCtx = path + SEPARATOR + name;
             String type = IOUtils.getExtensionFromFilePath(name);
             String content = IOUtils.getContent(pathCtx);
-            IExecutionContextDescriptor context = ToolsDescriptorsFactoryUtils.getExecutionContextDescriptor(content, type);
+            IExecutionContextDescriptor context = ToolsDescriptorsFactoryUtils.createExecutionContextDescriptor(content, type);
             contexts.add(context);
         }
 
@@ -213,8 +213,8 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
     private void load() {
-        if(!location.endsWith("/"))
-                location += "/";
+        if(!location.endsWith(SEPARATOR))
+                location += SEPARATOR;
     }
 
 }

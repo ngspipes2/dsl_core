@@ -17,13 +17,13 @@ import java.io.IOException;
 
 public class ToolsDescriptorsFactoryUtils {
 
-    public static IToolDescriptor getToolDescriptor(String content, String type) throws IOException {
+    public static IToolDescriptor createToolDescriptor(String content, String type) throws IOException {
         if(type.equals("json"))
             return getToolForJsonDescriptor(content);
         return getToolForYAMLDescriptor(content);
     }
 
-    public static IExecutionContextDescriptor getExecutionContextDescriptor(String content, String type) throws IOException {
+    public static IExecutionContextDescriptor createExecutionContextDescriptor(String content, String type) throws IOException {
         if(type.equals("json"))
             return getExecutionContextForJsonDescriptor(content);
         return getExecutionContextForYAMLDescriptor(content);

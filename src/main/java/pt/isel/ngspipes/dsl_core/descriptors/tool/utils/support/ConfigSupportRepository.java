@@ -15,9 +15,9 @@ public class ConfigSupportRepository {
 
     private static final String GITHUB_REPO_SUPPORT_LABEL = "Github";
 
-    public static String github_base_location;
-    public static String github_access_location;
-    public static String github_api_location;
+    public static String github_base_uri;
+    public static String github_access_uri;
+    public static String github_api_uri;
 
     static {
         try {
@@ -36,9 +36,9 @@ public class ConfigSupportRepository {
     private static void loadGithubSupport() throws ToolRepositoryException {
         SupportedRepository github = getRepositoriesSupportedData(GITHUB_REPO_SUPPORT_LABEL);
         if(github != null) {
-            github_base_location = github.base_location;
-            github_access_location = github.access_location;
-            github_api_location = github.api_location;
+            github_base_uri = github.base_uri;
+            github_access_uri = github.access_uri;
+            github_api_uri = github.api_uri;
         }
     }
 
