@@ -73,45 +73,45 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     @Override
-    public IToolDescriptor get(String name) throws ToolRepositoryException {
-        String descriptorName = getDescriptorName(name);
-        String toolDescriptorUri = getDescriptorUri(name, descriptorName);
+    public IToolDescriptor get(String toolName) throws ToolRepositoryException {
+        String descriptorName = getDescriptorName(toolName);
+        String toolDescriptorUri = getDescriptorUri(toolName, descriptorName);
         String content = HttpUtils.getContent(toolDescriptorUri);
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
         try {
-            return createToolDescriptor(name, type, content);
+            return createToolDescriptor(toolName, type, content);
         } catch (IOException e) {
-            throw new ToolRepositoryException("Error loading " + name + " tool descriptor", e);
+            throw new ToolRepositoryException("Error loading " + toolName + " tool descriptor", e);
         }
     }
 
     @Override
-    public void update(IToolDescriptor entity) throws ToolRepositoryException {
+    public void update(IToolDescriptor tool) throws ToolRepositoryException {
         throw new ToolRepositoryException("Update operation not supported");
     }
 
     @Override
-    public void insert(IToolDescriptor entity) throws ToolRepositoryException {
+    public void insert(IToolDescriptor tool) throws ToolRepositoryException {
         throw new ToolRepositoryException("Insert operation not supported");
     }
 
     @Override
-    public void delete(String id) throws ToolRepositoryException {
+    public void delete(String toolName) throws ToolRepositoryException {
         throw new ToolRepositoryException("Delete operation not supported");
     }
 
 
 
-    private String getDescriptorUri(String name, String descriptorName) {
-        String toolUri = accessUri + SEPARATOR + name;
+    private String getDescriptorUri(String toolName, String descriptorName) {
+        String toolUri = accessUri + SEPARATOR + toolName;
         return toolUri + SEPARATOR + descriptorName;
     }
 
-    private IToolDescriptor createToolDescriptor(String name, String type, String content) throws IOException, ToolRepositoryException {
+    private IToolDescriptor createToolDescriptor(String toolName, String type, String content) throws IOException, ToolRepositoryException {
         ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.createToolDescriptor(content, type);
-        Collection<IExecutionContextDescriptor> executionContextDescriptors = createExecutionContexts(name);
+        Collection<IExecutionContextDescriptor> executionContextDescriptors = createExecutionContexts(toolName);
         toolDescriptor.setExecutionContexts(executionContextDescriptors);
-        toolDescriptor.setLogo(getLogo(name));
+        toolDescriptor.setLogo(getLogo(toolName));
         return toolDescriptor;
     }
 
@@ -121,18 +121,14 @@ public class GithubToolsRepository extends ToolsRepository {
         Collection<String> names = GithubUtils.getFilesNames(toolUri, NAMES_KEY);
         for (String currName: names) {
             String type = IOUtils.getExtensionFromFilePath(currName);
-            String currDescriptorName = currName;
+            descriptorName = currName;
             currName = currName.substring(0, currName.indexOf("." + type));
             if(currName.equals(DESCRIPTOR_FILE_NAME)) {
-                descriptorName = currDescriptorName;
-                break;
+                return descriptorName;
             }
         }
 
-        if (descriptorName.isEmpty())
-            throw new ToolRepositoryException("Couldn't find descriptor for tool" + toolName);
-
-        return descriptorName;
+        throw new ToolRepositoryException("Couldn't find descriptor for tool" + toolName);
     }
 
     private String getApiToolUri(String toolName) {
@@ -147,20 +143,20 @@ public class GithubToolsRepository extends ToolsRepository {
         return accessUri + SEPARATOR + toolName;
     }
 
-    private String getLogo(String name) throws ToolRepositoryException {
-        String logoUri = getAccessToolUri(name) + SEPARATOR + LOGO_FILE_NAME;
+    private String getLogo(String toolName) throws ToolRepositoryException {
+        String logoUri = getAccessToolUri(toolName) + SEPARATOR + LOGO_FILE_NAME;
         return HttpUtils.canConnect(logoUri) ? logoUri : null;
     }
 
-    private Collection<IExecutionContextDescriptor> createExecutionContexts(String name) throws IOException, ToolRepositoryException {
+    private Collection<IExecutionContextDescriptor> createExecutionContexts(String toolName) throws IOException, ToolRepositoryException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
-        Collection<String> names = getExecutionContextsNames(name);
-        String executionAccessUri =  getAccessToolUri(name) + EXECUTION_CONTEXTS_SUB_URI;
+        Collection<String> names = getExecutionContextsNames(toolName);
+        String executionAccessUri =  getAccessToolUri(toolName) + EXECUTION_CONTEXTS_SUB_URI;
         String uriCtx = "";
 
-        for (String ctxName: names) {
-            uriCtx = executionAccessUri + SEPARATOR + ctxName;
-            String type = IOUtils.getExtensionFromFilePath(ctxName);
+        for (String name: names) {
+            uriCtx = executionAccessUri + SEPARATOR + name;
+            String type = IOUtils.getExtensionFromFilePath(name);
             String content = HttpUtils.getContent(uriCtx);
             IExecutionContextDescriptor context = ToolsDescriptorsFactoryUtils.createExecutionContextDescriptor(content, type);
             contexts.add(context);
