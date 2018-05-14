@@ -12,21 +12,26 @@ import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescript
 import pt.isel.ngspipes.tool_descriptor.implementations.OutputDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.*;
+import utils.ToolRepositoryException;
 
 import java.io.IOException;
 
 public class ToolsDescriptorsFactoryUtils {
 
-    public static IToolDescriptor createToolDescriptor(String content, String type) throws IOException {
+    public static IToolDescriptor createToolDescriptor(String content, String type) throws IOException, ToolRepositoryException {
         if(type.equals("json"))
-            return getToolForJsonDescriptor(content);
-        return getToolForYAMLDescriptor(content);
+            return getToolForJSONDescriptor(content);
+        if(type.equals("yml"))
+            return getToolForYAMLDescriptor(content);
+        throw new ToolRepositoryException("Type: " + type + " not supported");
     }
 
-    public static IExecutionContextDescriptor createExecutionContextDescriptor(String content, String type) throws IOException {
+    public static IExecutionContextDescriptor createExecutionContextDescriptor(String content, String type) throws IOException, ToolRepositoryException {
         if(type.equals("json"))
-            return getExecutionContextForJsonDescriptor(content);
-        return getExecutionContextForYAMLDescriptor(content);
+            return getExecutionContextForJSONDescriptor(content);
+        if(type.equals("yml"))
+            return getExecutionContextForYAMLDescriptor(content);
+        throw new ToolRepositoryException("Type: " + type + " not supported");
     }
 
     public static String getToolDescriptorAsString(IToolDescriptor tool, String type) throws JsonProcessingException {
@@ -67,7 +72,7 @@ public class ToolsDescriptorsFactoryUtils {
         return resolver;
     }
 
-    private static IExecutionContextDescriptor getExecutionContextForJsonDescriptor(String content) throws IOException {
+    private static IExecutionContextDescriptor getExecutionContextForJSONDescriptor(String content) throws IOException {
         return JacksonUtils.getObjectMapper(new JsonFactory()).readValue(content, ExecutionContextDescriptor.class);
     }
 
@@ -81,7 +86,7 @@ public class ToolsDescriptorsFactoryUtils {
         return JacksonUtils.getObjectMapper(new YAMLFactory(), getToolResolver()).readValue(content, ToolDescriptor.class);
     }
 
-    private static IToolDescriptor getToolForJsonDescriptor(String content) throws IOException {
+    private static IToolDescriptor getToolForJSONDescriptor(String content) throws IOException {
         return JacksonUtils.getObjectMapper(new JsonFactory(), getToolResolver()).readValue(content, ToolDescriptor.class);
     }
 }

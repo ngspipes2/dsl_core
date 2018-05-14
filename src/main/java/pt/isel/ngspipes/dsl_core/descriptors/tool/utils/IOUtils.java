@@ -11,8 +11,6 @@ public class IOUtils {
 
     public static boolean existDirectory(String path) throws ToolRepositoryException {
         File file = new File(path);
-        if (file == null)
-            throw new ToolRepositoryException("Wanted directory doesn't exist");
         return file.exists() && file.isDirectory();
     }
 

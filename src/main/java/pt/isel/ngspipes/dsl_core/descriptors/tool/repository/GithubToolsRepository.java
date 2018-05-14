@@ -39,8 +39,7 @@ public class GithubToolsRepository extends ToolsRepository {
             String apiLocation =  location.replace( ConfigSupportRepository.github_base_uri,
                     ConfigSupportRepository.github_api_uri);
             apiLocation += "/contents";
-            if(HttpUtils.canConnect(apiLocation))
-                return true;
+            return HttpUtils.canConnect(apiLocation);
         }
         return false;
     }
@@ -50,8 +49,8 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
 
-    String accessUri;
-    String apiUri;
+    private String accessUri;
+    private String apiUri;
 
 
     public GithubToolsRepository(String location, Map<String, Object> config) {
@@ -116,7 +115,7 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     private String getDescriptorName(String toolName) throws ToolRepositoryException {
-        String descriptorName = "";
+        String descriptorName;
         String toolUri = getApiToolUri(toolName);
         Collection<String> names = GithubUtils.getFilesNames(toolUri, NAMES_KEY);
         for (String currName: names) {
@@ -152,7 +151,7 @@ public class GithubToolsRepository extends ToolsRepository {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
         Collection<String> names = getExecutionContextsNames(toolName);
         String executionAccessUri =  getAccessToolUri(toolName) + EXECUTION_CONTEXTS_SUB_URI;
-        String uriCtx = "";
+        String uriCtx;
 
         for (String name: names) {
             uriCtx = executionAccessUri + SEPARATOR + name;

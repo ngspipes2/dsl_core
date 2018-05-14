@@ -104,7 +104,7 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
     @Override
-    public void delete(String toolName) throws ToolRepositoryException {
+    public void delete(String toolName) {
         IOUtils.deleteFolder(location + toolName);
     }
 
@@ -133,7 +133,7 @@ public class LocalToolsRepository extends ToolsRepository {
         IOUtils.copyFile(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
-    private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException {
+    private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException, ToolRepositoryException {
         String content = IOUtils.getContent(toolDescriptorPath);
         ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.createToolDescriptor(content, type);
         Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolPath);
@@ -155,7 +155,7 @@ public class LocalToolsRepository extends ToolsRepository {
     private void updateExecutionContexts(String toolPath, Collection<IExecutionContextDescriptor> executionContexts) throws IOException {
         String executionCtx = toolPath + EXECUTION_CONTEXTS_SUB_URI;
         Collection<String> names = IOUtils.getDirectoryFilesName(executionCtx);
-        String pathCtx = "";
+        String pathCtx;
 
         for (String name: names) {
             pathCtx = executionCtx + "/" + name;
@@ -195,11 +195,11 @@ public class LocalToolsRepository extends ToolsRepository {
         return IOUtils.existFile(logoUri.toString()) ? logoUri.toString() : null;
     }
 
-    private Collection<IExecutionContextDescriptor> getExecutionContexts(String path) throws IOException {
+    private Collection<IExecutionContextDescriptor> getExecutionContexts(String path) throws IOException, ToolRepositoryException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
         path += EXECUTION_CONTEXTS_SUB_URI;
         Collection<String> names = IOUtils.getDirectoryFilesName(path);
-        String pathCtx = "";
+        String pathCtx;
 
         for (String name: names) {
             pathCtx = path + SEPARATOR + name;
