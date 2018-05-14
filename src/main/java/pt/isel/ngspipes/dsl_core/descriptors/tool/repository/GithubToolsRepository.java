@@ -165,8 +165,8 @@ public class GithubToolsRepository extends ToolsRepository {
         return contexts;
     }
 
-    private Collection<String> getExecutionContextsNames(String name) throws ToolRepositoryException {
-        return GithubUtils.getFilesNames(getApiExecutionContextUri(name), NAMES_KEY);
+    private Collection<String> getExecutionContextsNames(String toolName) throws ToolRepositoryException {
+        return GithubUtils.getFilesNames(getApiExecutionContextUri(toolName), NAMES_KEY);
     }
 
     private void load() {

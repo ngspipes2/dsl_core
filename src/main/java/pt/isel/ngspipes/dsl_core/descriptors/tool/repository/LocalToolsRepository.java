@@ -32,7 +32,7 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
     private static boolean verifyLocation(String location) throws ToolRepositoryException {
-        return IOUtils.canLoadDirectory(location);
+        return IOUtils.existDirectory(location);
     }
 
     public LocalToolsRepository(String location, Map<String, Object> config) {
@@ -57,80 +57,80 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
     @Override
-    public IToolDescriptor get(String name) throws ToolRepositoryException {
-        String toolPath = location + name;
+    public IToolDescriptor get(String toolName) throws ToolRepositoryException {
+        String toolPath = location + toolName;
         String descriptorName = getDescriptorName(toolPath);
         String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
         try {
             return getToolDescriptor(toolPath, toolDescriptorPath, type);
         } catch (IOException e) {
-            throw new ToolRepositoryException("Error loading " + name + " tool descriptor", e);
+            throw new ToolRepositoryException("Error loading " + toolName + " tool descriptor", e);
         }
     }
 
     @Override
-    public void update(IToolDescriptor entity) throws ToolRepositoryException {
-        String toolPath = location + entity.getName();
+    public void update(IToolDescriptor tool) throws ToolRepositoryException {
+        String toolPath = location + tool.getName();
 
-        if (!IOUtils.canLoadDirectory(toolPath))
-            throw new ToolRepositoryException("Can't find a tool with name: " + entity.getName());
+        if (!IOUtils.existDirectory(toolPath))
+            throw new ToolRepositoryException("Can't find a tool with name: " + tool.getName());
 
         String descriptorName = getDescriptorName(toolPath);
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
         String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
 
         try {
-            updateTool(entity, toolPath, type, toolDescriptorPath);
+            updateTool(tool, toolPath, type, toolDescriptorPath);
         } catch (IOException e) {
-            throw new ToolRepositoryException("Error updating " + entity.getName() + " tool descriptor", e);
+            throw new ToolRepositoryException("Error updating " + tool.getName() + " tool descriptor", e);
         }
     }
 
     @Override
-    public void insert(IToolDescriptor entity) throws ToolRepositoryException {
-        String toolPath = location + entity.getName();
+    public void insert(IToolDescriptor tool) throws ToolRepositoryException {
+        String toolPath = location + tool.getName();
 
-        if(IOUtils.canLoadDirectory(toolPath))
-           throw new ToolRepositoryException("There is already a tool with name: " + entity.getName());
+        if(IOUtils.existDirectory(toolPath))
+           throw new ToolRepositoryException("There is already a tool with name: " + tool.getName());
 
         IOUtils.createFolder(toolPath);
         String toolDescriptorPath = toolPath + SEPARATOR + DESCRIPTOR_FILE_NAME + "." + type;
         try {
-            insertTool(entity, toolPath, toolDescriptorPath);
+            insertTool(tool, toolPath, toolDescriptorPath);
         } catch (IOException e) {
-            throw new ToolRepositoryException("Error updating " + entity.getName() + " tool descriptor", e);
+            throw new ToolRepositoryException("Error updating " + tool.getName() + " tool descriptor", e);
         }
     }
 
     @Override
-    public void delete(String id) throws ToolRepositoryException {
-        IOUtils.deleteFolder(location + id);
+    public void delete(String toolName) throws ToolRepositoryException {
+        IOUtils.deleteFolder(location + toolName);
     }
 
 
 
 
-    private void updateTool(IToolDescriptor entity, String toolPath, String type, String toolDescriptorPath) throws IOException {
-        String jsonStr = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(entity, type);
+    private void updateTool(IToolDescriptor tool, String toolPath, String type, String toolDescriptorPath) throws IOException {
+        String jsonStr = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(tool, type);
         IOUtils.write(jsonStr, toolDescriptorPath);
 
-        Collection<IExecutionContextDescriptor> executionContexts = entity.getExecutionContexts();
+        Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
         updateExecutionContexts(toolPath, executionContexts);
 
-        IOUtils.copyFile(entity.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
+        IOUtils.copyFile(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
-    private void insertTool(IToolDescriptor entity, String toolPath, String toolDescriptorPath) throws IOException, ToolRepositoryException {
-        String jsonStr = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(entity, type);
+    private void insertTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath) throws IOException, ToolRepositoryException {
+        String jsonStr = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(tool, type);
         IOUtils.write(jsonStr, toolDescriptorPath);
 
-        Collection<IExecutionContextDescriptor> executionContexts = entity.getExecutionContexts();
+        Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
         if(executionContexts == null || executionContexts.isEmpty())
             throw new ToolRepositoryException("A tool must have at least an execution context");
         writeExecutionContexts(toolPath, executionContexts);
 
-        IOUtils.copyFile(entity.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
+        IOUtils.copyFile(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
     private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException {
@@ -192,7 +192,7 @@ public class LocalToolsRepository extends ToolsRepository {
         StringBuilder logoUri = new StringBuilder(toolPath);
         logoUri.append(SEPARATOR)
                 .append(LOGO_FILE_NAME);
-        return IOUtils.canLoadFile(logoUri.toString()) ? logoUri.toString() : null;
+        return IOUtils.existFile(logoUri.toString()) ? logoUri.toString() : null;
     }
 
     private Collection<IExecutionContextDescriptor> getExecutionContexts(String path) throws IOException {
