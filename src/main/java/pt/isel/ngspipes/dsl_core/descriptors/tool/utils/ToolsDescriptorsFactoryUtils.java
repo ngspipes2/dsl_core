@@ -34,28 +34,32 @@ public class ToolsDescriptorsFactoryUtils {
         throw new ToolRepositoryException("Type: " + type + " not supported");
     }
 
-    public static String getToolDescriptorAsString(IToolDescriptor tool, String type) throws JsonProcessingException {
+    public static String getToolDescriptorAsString(IToolDescriptor tool, String type) throws JsonProcessingException, ToolRepositoryException {
         ObjectMapper mapper;
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
         resolver.addMapping(IToolDescriptor.class, JacksonToolDescriptor.class);
 
         if(type.equals("json"))
             mapper = JacksonUtils.getObjectMapper(new JsonFactory(), resolver);
-        else
+        else if(type.equals("yml"))
             mapper = JacksonUtils.getObjectMapper(new YAMLFactory(), resolver);
+        else
+            throw new ToolRepositoryException("Type: " + type + " not supported");
 
         return mapper.writeValueAsString(tool);
     }
 
-    public static String getExecutionContextDescriptorAsString(IExecutionContextDescriptor ctx, String type) throws JsonProcessingException {
+    public static String getExecutionContextDescriptorAsString(IExecutionContextDescriptor ctx, String type) throws JsonProcessingException, ToolRepositoryException {
         ObjectMapper mapper;
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
         resolver.addMapping(IExecutionContextDescriptor.class, ExecutionContextDescriptor.class);
 
         if(type.equals("json"))
             mapper = JacksonUtils.getObjectMapper(new JsonFactory(), resolver);
-        else
+        else if(type.equals("yml"))
             mapper = JacksonUtils.getObjectMapper(new YAMLFactory(), resolver);
+        else
+            throw new ToolRepositoryException("Type: " + type + " not supported");
 
         return mapper.writeValueAsString(ctx);
     }
