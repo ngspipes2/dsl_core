@@ -1,13 +1,13 @@
-package pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.utils;
+package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.descriptor.jackson_entities.JacksonCommandDescriptor;
-import pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.descriptor.jackson_entities.JacksonParameterDescriptor;
-import pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.descriptor.jackson_entities.JacksonToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.jackson_entities.JacksonCommandDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.jackson_entities.JacksonParameterDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.jackson_entities.JacksonToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.OutputDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;

@@ -1,4 +1,4 @@
-package pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool;
+package pt.isel.ngspipes.dsl_core.descriptors.tool;
 
 import interfaces.IToolsRepository;
 import utils.ToolRepositoryException;

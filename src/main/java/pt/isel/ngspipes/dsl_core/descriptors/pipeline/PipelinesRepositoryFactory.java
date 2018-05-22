@@ -1,4 +1,4 @@
-package pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.pipeline;
+package pt.isel.ngspipes.dsl_core.descriptors.pipeline;
 
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelineRepositoryException;

@@ -1,4 +1,4 @@
-package pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.descriptor.jackson_entities;
+package pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.jackson_entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
