@@ -1,5 +1,5 @@
 import org.junit.Test;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsRepository;
+import pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.repository.GithubToolsRepository;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import utils.ToolRepositoryException;
 

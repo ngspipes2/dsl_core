@@ -1,9 +1,9 @@
-package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
+package pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.repository;
 
 import implementations.ToolsRepository;
 import interfaces.IToolsRepository;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
+import pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.utils.IOUtils;
+import pt.isel.ngspipes.dsl_core.dsl_parser.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
