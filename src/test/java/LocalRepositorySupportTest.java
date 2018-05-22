@@ -1,5 +1,5 @@
 import org.junit.Test;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.descriptor.jackson_entities.JacksonToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonToolDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.LocalToolsRepository;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
