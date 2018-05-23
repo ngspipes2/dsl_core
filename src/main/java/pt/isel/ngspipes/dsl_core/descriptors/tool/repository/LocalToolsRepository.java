@@ -70,20 +70,8 @@ public class LocalToolsRepository extends ToolsRepository {
 
     @Override
     public void update(IToolDescriptor tool) throws ToolRepositoryException {
-        String toolPath = location + SEPARATOR + tool.getName();
-
-        if (!IOUtils.existDirectory(toolPath))
-            throw new ToolRepositoryException("Can't find a tool with name: " + tool.getName());
-
-        String descriptorName = getDescriptorName(toolPath);
-        String type = IOUtils.getExtensionFromFilePath(descriptorName);
-        String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
-
-        try {
-            updateTool(tool, toolPath, type, toolDescriptorPath);
-        } catch (IOException e) {
-            throw new ToolRepositoryException("Error updating " + tool.getName() + " tool descriptor", e);
-        }
+        delete(tool.getName());
+        insert(tool);
     }
 
     @Override
@@ -108,17 +96,6 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
 
-
-
-    private void updateTool(IToolDescriptor tool, String toolPath, String type, String toolDescriptorPath) throws IOException, ToolRepositoryException {
-        String descriptorAsString = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(tool, type);
-        IOUtils.write(descriptorAsString, toolDescriptorPath);
-
-        Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
-        updateExecutionContexts(toolPath, executionContexts);
-
-        IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
-    }
 
     private void insertTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath) throws IOException, ToolRepositoryException {
         String descriptorAsString = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(tool, type);
@@ -150,29 +127,7 @@ public class LocalToolsRepository extends ToolsRepository {
             IOUtils.write(currCtx, dirPath + SEPARATOR + ctx.getName() + "." + type);
         }
     }
-
-    private void updateExecutionContexts(String toolPath, Collection<IExecutionContextDescriptor> executionContexts) throws IOException, ToolRepositoryException {
-        String executionCtx = toolPath + EXECUTION_CONTEXTS_DIRECTORY;
-        Collection<String> names = IOUtils.getDirectoryFilesName(executionCtx);
-        String pathCtx;
-
-        for (String name: names) {
-            pathCtx = executionCtx + "/" + name;
-            String type = IOUtils.getExtensionFromFilePath(name);
-            IExecutionContextDescriptor ctx = getExecutionContextByName(executionContexts, name);
-            String currCtx = ToolsDescriptorsFactoryUtils.getExecutionContextDescriptorAsString(ctx, type);
-            IOUtils.write(currCtx, pathCtx);
-        }
-    }
-
-    private IExecutionContextDescriptor getExecutionContextByName(Collection<IExecutionContextDescriptor> executionContexts, String name) {
-        IExecutionContextDescriptor ctx = null;
-        for (IExecutionContextDescriptor execCtx : executionContexts)
-            if (execCtx.getName().equals(name))
-                ctx = execCtx;
-        return ctx;
-    }
-
+    
     private String getDescriptorName(String toolPath) throws ToolRepositoryException {
         String descriptorName = "";
         Collection<String> names = IOUtils.getDirectoryFilesName(toolPath);
