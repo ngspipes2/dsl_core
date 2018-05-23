@@ -10,7 +10,7 @@ public class JacksonToolDescriptor extends ToolDescriptor {
 
     @JsonIgnore
     @Override
-    public String getLogo() { return super.getLogo(); }
+    public byte[] getLogo() { return super.getLogo(); }
 
     @JsonIgnore
     @Override

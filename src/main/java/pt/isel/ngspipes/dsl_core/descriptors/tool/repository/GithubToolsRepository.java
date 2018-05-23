@@ -3,10 +3,10 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 import implementations.ToolsRepository;
 import interfaces.IToolsRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.GithubUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.HttpUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.support.ConfigSupportRepository;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.HttpUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
@@ -35,12 +35,19 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     private static boolean verifyLocation(String location) throws ToolRepositoryException {
-        if(isGithubUri(location)) {
-            String apiLocation =  location.replace( ConfigSupportRepository.github_base_uri,
-                    ConfigSupportRepository.github_api_uri);
-            apiLocation += "/contents";
-            return HttpUtils.canConnect(apiLocation);
+        try {
+            if(isGithubUri(location)) {
+                String apiLocation =  location.replace(
+                        ConfigSupportRepository.github_base_uri,
+                        ConfigSupportRepository.github_api_uri);
+                apiLocation += "/contents";
+
+                return HttpUtils.canConnect(apiLocation);
+            }
+        } catch (IOException e) {
+            throw new ToolRepositoryException("Could not verify location:" + location, e);
         }
+
         return false;
     }
 
@@ -73,11 +80,12 @@ public class GithubToolsRepository extends ToolsRepository {
 
     @Override
     public IToolDescriptor get(String toolName) throws ToolRepositoryException {
-        String descriptorName = getDescriptorName(toolName);
-        String toolDescriptorUri = getDescriptorUri(toolName, descriptorName);
-        String content = HttpUtils.getContent(toolDescriptorUri);
-        String type = IOUtils.getExtensionFromFilePath(descriptorName);
         try {
+            String descriptorName = getDescriptorName(toolName);
+            String toolDescriptorUri = getDescriptorUri(toolName, descriptorName);
+            String content = HttpUtils.get(toolDescriptorUri);
+            String type = IOUtils.getExtensionFromFilePath(descriptorName);
+
             return createToolDescriptor(toolName, type, content);
         } catch (IOException e) {
             throw new ToolRepositoryException("Error loading " + toolName + " tool descriptor", e);
@@ -142,9 +150,13 @@ public class GithubToolsRepository extends ToolsRepository {
         return accessUri + SEPARATOR + toolName;
     }
 
-    private String getLogo(String toolName) throws ToolRepositoryException {
+    private byte[] getLogo(String toolName) throws IOException {
         String logoUri = getAccessToolUri(toolName) + SEPARATOR + LOGO_FILE_NAME;
-        return HttpUtils.canConnect(logoUri) ? logoUri : null;
+
+        if(HttpUtils.canConnect(logoUri))
+            return HttpUtils.getBytes(logoUri);
+
+        return null;
     }
 
     private Collection<IExecutionContextDescriptor> createExecutionContexts(String toolName) throws IOException, ToolRepositoryException {
@@ -156,7 +168,7 @@ public class GithubToolsRepository extends ToolsRepository {
         for (String name: names) {
             uriCtx = executionAccessUri + SEPARATOR + name;
             String type = IOUtils.getExtensionFromFilePath(name);
-            String content = HttpUtils.getContent(uriCtx);
+            String content = HttpUtils.get(uriCtx);
             IExecutionContextDescriptor context = ToolsDescriptorsFactoryUtils.createExecutionContextDescriptor(content, type);
             contexts.add(context);
         }

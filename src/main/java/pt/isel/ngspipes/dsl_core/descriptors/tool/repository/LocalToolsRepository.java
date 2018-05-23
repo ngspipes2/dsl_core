@@ -3,7 +3,7 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 import implementations.ToolsRepository;
 import interfaces.IToolsRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
@@ -117,7 +117,7 @@ public class LocalToolsRepository extends ToolsRepository {
         Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
         updateExecutionContexts(toolPath, executionContexts);
 
-        IOUtils.copyFile(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
+        IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
     private void insertTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath) throws IOException, ToolRepositoryException {
@@ -129,11 +129,11 @@ public class LocalToolsRepository extends ToolsRepository {
             throw new ToolRepositoryException("A tool must have at least an execution context");
         writeExecutionContexts(toolPath, executionContexts);
 
-        IOUtils.copyFile(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
+        IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
     private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException, ToolRepositoryException {
-        String content = IOUtils.getContent(toolDescriptorPath);
+        String content = IOUtils.read(toolDescriptorPath);
         ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.createToolDescriptor(content, type);
         Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolPath);
         toolDescriptor.setExecutionContexts(executionContextDescriptors);
@@ -187,11 +187,14 @@ public class LocalToolsRepository extends ToolsRepository {
         throw new ToolRepositoryException("Couldn't find descriptor for tool");
     }
 
-    private String getLogo(String toolPath) {
-        StringBuilder logoUri = new StringBuilder(toolPath);
-        logoUri.append(SEPARATOR)
-                .append(LOGO_FILE_NAME);
-        return IOUtils.existFile(logoUri.toString()) ? logoUri.toString() : null;
+    private byte[] getLogo(String toolPath) throws IOException {
+        String logoPath = toolPath + SEPARATOR + LOGO_FILE_NAME;
+
+        if(IOUtils.existFile(logoPath))
+            return IOUtils.readBytes(logoPath);
+
+        return null;
+
     }
 
     private Collection<IExecutionContextDescriptor> getExecutionContexts(String path) throws IOException, ToolRepositoryException {
@@ -203,7 +206,7 @@ public class LocalToolsRepository extends ToolsRepository {
         for (String name: names) {
             pathCtx = path + SEPARATOR + name;
             String type = IOUtils.getExtensionFromFilePath(name);
-            String content = IOUtils.getContent(pathCtx);
+            String content = IOUtils.read(pathCtx);
             IExecutionContextDescriptor context = ToolsDescriptorsFactoryUtils.createExecutionContextDescriptor(content, type);
             contexts.add(context);
         }

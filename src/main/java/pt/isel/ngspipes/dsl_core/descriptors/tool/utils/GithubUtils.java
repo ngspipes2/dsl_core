@@ -2,6 +2,7 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.HttpUtils;
 import utils.ToolRepositoryException;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class GithubUtils {
 
     public static JsonNode getJsonNodeFrom(String uri) throws ToolRepositoryException {
         try {
-            String content = HttpUtils.getContent(uri);
+            String content = HttpUtils.get(uri);
             return new ObjectMapper().readTree(content);
         } catch (IOException e) {
             throw new ToolRepositoryException("Error loading content", e);
@@ -37,7 +38,7 @@ public class GithubUtils {
     private static Collection<String> getJSONPropertyValueByName(String uri, String propertyName, String type) throws ToolRepositoryException {
         try {
             Collection<String> fieldValues = new LinkedList<>();
-            String content = HttpUtils.getContent(uri);
+            String content = HttpUtils.get(uri);
             JsonNode jsonNodeArr = new ObjectMapper().readTree(content);
             if(jsonNodeArr.isArray()) {
                 for (JsonNode jsonNode : jsonNodeArr) {

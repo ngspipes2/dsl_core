@@ -1,5 +1,5 @@
 import org.junit.Test;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.IOUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 
 import java.util.Collection;
 
