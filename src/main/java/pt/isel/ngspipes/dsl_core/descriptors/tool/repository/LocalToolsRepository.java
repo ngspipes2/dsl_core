@@ -19,7 +19,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
-    private static final String DEFAULT_TYPE = "json";
+    private static final String DEFAULT_SERIALIZATION_FORMAT = "json";
     private static final String SEPARATOR = "/";
     private static final String EXECUTION_CONTEXTS_DIRECTORY = "/execution_contexts";
 
@@ -35,12 +35,17 @@ public class LocalToolsRepository extends ToolsRepository {
         return IOUtils.existDirectory(location);
     }
 
+
+    private String serializationType;
+
+
     public LocalToolsRepository(String location, Map<String, Object> config) {
-        this(location, config, DEFAULT_TYPE);
+        this(location, config, DEFAULT_SERIALIZATION_FORMAT);
     }
 
-    public LocalToolsRepository(String location, Map<String, Object> config, String type) {
-        super(location, config, type);
+    public LocalToolsRepository(String location, Map<String, Object> config, String serializationFormat) {
+        super(location, config);
+        this.serializationType = serializationFormat;
     }
 
     @Override
@@ -82,7 +87,7 @@ public class LocalToolsRepository extends ToolsRepository {
            throw new ToolRepositoryException("There is already a tool with name: " + tool.getName());
 
         IOUtils.createFolder(toolPath);
-        String toolDescriptorPath = toolPath + SEPARATOR + DESCRIPTOR_FILE_NAME + "." + type;
+        String toolDescriptorPath = toolPath + SEPARATOR + DESCRIPTOR_FILE_NAME + "." + serializationType;
         try {
             insertTool(tool, toolPath, toolDescriptorPath);
         } catch (IOException e) {
@@ -98,7 +103,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
     private void insertTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath) throws IOException, ToolRepositoryException {
-        String descriptorAsString = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(tool, type);
+        String descriptorAsString = ToolsDescriptorsFactoryUtils.getToolDescriptorAsString(tool, serializationType);
         IOUtils.write(descriptorAsString, toolDescriptorPath);
 
         Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
@@ -121,8 +126,8 @@ public class LocalToolsRepository extends ToolsRepository {
         IOUtils.createFolder(dirPath);
 
         for (IExecutionContextDescriptor ctx : executionContexts) {
-            String currCtx = ToolsDescriptorsFactoryUtils.getExecutionContextDescriptorAsString(ctx, type);
-            IOUtils.write(currCtx, dirPath + SEPARATOR + ctx.getName() + "." + type);
+            String currCtx = ToolsDescriptorsFactoryUtils.getExecutionContextDescriptorAsString(ctx, serializationType);
+            IOUtils.write(currCtx, dirPath + SEPARATOR + ctx.getName() + "." + serializationType);
         }
     }
 
