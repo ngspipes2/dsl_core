@@ -102,8 +102,6 @@ public class LocalToolsRepository extends ToolsRepository {
         IOUtils.write(descriptorAsString, toolDescriptorPath);
 
         Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
-        if(executionContexts == null || executionContexts.isEmpty())
-            throw new ToolRepositoryException("A tool must have at least an execution context");
         writeExecutionContexts(toolPath, executionContexts);
 
         IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
@@ -127,7 +125,7 @@ public class LocalToolsRepository extends ToolsRepository {
             IOUtils.write(currCtx, dirPath + SEPARATOR + ctx.getName() + "." + type);
         }
     }
-    
+
     private String getDescriptorName(String toolPath) throws ToolRepositoryException {
         String descriptorName = "";
         Collection<String> names = IOUtils.getDirectoryFilesName(toolPath);
