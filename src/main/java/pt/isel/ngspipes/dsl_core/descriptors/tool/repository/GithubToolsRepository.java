@@ -1,7 +1,5 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
-import implementations.ToolsRepository;
-import interfaces.IToolsRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.GithubUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.support.ConfigSupportRepository;
@@ -10,6 +8,8 @@ import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
+import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
+import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolRepositoryException;
 
 import java.io.IOException;

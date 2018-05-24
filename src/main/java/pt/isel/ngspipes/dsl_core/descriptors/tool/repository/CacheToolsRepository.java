@@ -1,6 +1,6 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
-import pt.isel.ngspipes.engine_core.interfaces.IToolsRepository;
+import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import utils.ToolRepositoryException;
 

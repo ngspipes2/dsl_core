@@ -1,6 +1,6 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool;
 
-import interfaces.IToolsRepository;
+import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolRepositoryException;
 
 import java.util.Collection;
