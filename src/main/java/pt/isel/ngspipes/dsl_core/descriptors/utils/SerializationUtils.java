@@ -27,13 +27,13 @@ public class SerializationUtils {
 
     public static String serialize(Object obj, SerializationFormat serializationFormat, SimpleAbstractTypeResolver resolver) throws DSLCoreException {
         if(serializationFormat.equals(SerializationFormat.JSON))
-            serialize(obj, resolver, new JsonFactory());
+            return serialize(obj, resolver, new JsonFactory());
 
         if(serializationFormat.equals(SerializationFormat.YAML))
-            serialize(obj, resolver, new YAMLFactory());
+            return serialize(obj, resolver, new YAMLFactory());
 
         if(serializationFormat.equals(SerializationFormat.XML))
-            serialize(obj, resolver, new XmlFactory());
+            return serialize(obj, resolver, new XmlFactory());
 
         throw new DSLCoreException("Unknown SerializationFormat:" + serializationFormat);
     }
@@ -60,13 +60,13 @@ public class SerializationUtils {
 
     public static <T> T deserialize(String content, SerializationFormat serializationFormat, JavaType klass, SimpleAbstractTypeResolver resolver) throws DSLCoreException {
         if(serializationFormat.equals(SerializationFormat.JSON))
-            deserialize(content, klass, resolver, new JsonFactory());
+            return deserialize(content, klass, resolver, new JsonFactory());
 
         if(serializationFormat.equals(SerializationFormat.YAML))
-            deserialize(content, klass, resolver, new YAMLFactory());
+            return deserialize(content, klass, resolver, new YAMLFactory());
 
         if(serializationFormat.equals(SerializationFormat.XML))
-            deserialize(content, klass, resolver, new XmlFactory());
+            return deserialize(content, klass, resolver, new XmlFactory());
 
         throw new DSLCoreException("Unknown SerializationFormat:" + serializationFormat);
     }
