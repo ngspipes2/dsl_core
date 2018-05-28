@@ -103,6 +103,7 @@ public class ToolsDescriptorsUtils {
     private static SimpleAbstractTypeResolver getToolResolver() {
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
 
+        resolver.addMapping(IToolDescriptor.class, JacksonToolDescriptor.class);
         resolver.addMapping(ICommandDescriptor.class, JacksonCommandDescriptor.class);
         resolver.addMapping(IParameterDescriptor.class, JacksonParameterDescriptor.class);
         resolver.addMapping(IOutputDescriptor.class, OutputDescriptor.class);
@@ -114,7 +115,7 @@ public class ToolsDescriptorsUtils {
     private static SimpleAbstractTypeResolver getExecutionContextResolver() {
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
 
-        resolver.addMapping(IToolDescriptor.class, JacksonToolDescriptor.class);
+        resolver.addMapping(IExecutionContextDescriptor.class, ExecutionContextDescriptor.class);
 
         return resolver;
     }
