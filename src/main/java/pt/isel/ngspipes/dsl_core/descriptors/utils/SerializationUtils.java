@@ -119,7 +119,7 @@ public class SerializationUtils {
         throw new DSLCoreException("Unknown file extension:" + fileExtension);
     }
 
-    public static String getFileExtensionFromFFrom(SerializationFormat format) throws  DSLCoreException {
+    public static String getFileExtensionFromFormat(SerializationFormat format) throws  DSLCoreException {
         switch (format) {
             case JSON: return "json";
             case XML: return "xml";
