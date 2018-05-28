@@ -1,7 +1,7 @@
 package pt.isel.ngspipes.dsl_core.descriptors.pipeline;
 
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
-import pt.isel.ngspipes.pipeline_repository.PipelineRepositoryException;
+import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -30,7 +30,7 @@ public class PipelinesRepositoryFactory {
         FACTORIES.remove(factory);
     }
 
-    public static IPipelinesRepository create(String location, Map<String, Object> config) throws PipelineRepositoryException {
+    public static IPipelinesRepository create(String location, Map<String, Object> config) throws PipelinesRepositoryException {
         IPipelinesRepository repository;
 
         for(IPipelinesRepositoryFactory factory : FACTORIES) {
@@ -40,7 +40,7 @@ public class PipelinesRepositoryFactory {
                 return repository;
         }
 
-        throw new PipelineRepositoryException("Could not find factory to create PipelineRepository for location " + location + "!");
+        throw new PipelinesRepositoryException("Could not find factory to create PipelineRepository for location " + location + "!");
     }
 
 }

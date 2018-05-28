@@ -1,7 +1,7 @@
 import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsRepository;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
-import utils.ToolRepositoryException;
+import utils.ToolsRepositoryException;
 
 import java.util.Collection;
 
@@ -33,7 +33,7 @@ public class GitHubRepositorySupportTest {
             GithubToolsRepository repo = new GithubToolsRepository(location, null);
             IToolDescriptor toolDescriptor = repo.get(name);
             assertEquals(2, toolDescriptor.getExecutionContexts().size());
-        } catch (ToolRepositoryException e) {
+        } catch (ToolsRepositoryException e) {
             fail("Shouldn't generate exception.");
         }
 
@@ -50,14 +50,14 @@ public class GitHubRepositorySupportTest {
             GithubToolsRepository repo = new GithubToolsRepository(location, null);
             Collection<IToolDescriptor> toolDescriptors = repo.getAll();
             assertEquals(3, toolDescriptors.size());
-        } catch (ToolRepositoryException e) {
+        } catch (ToolsRepositoryException e) {
             fail("Shouldn't generate exception.");
         }
 
         //Assert
     }
 /*
-    @Test(expected = ToolRepositoryException.class)
+    @Test(expected = DSLCoreException.class)
     public void githubRepositorySupportWithBadLocationTest() {
         //Arrange
         String location = "https://github1.com/ngspipes/tools";

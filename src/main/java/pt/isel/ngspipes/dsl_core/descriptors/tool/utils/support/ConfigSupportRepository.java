@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import utils.ToolRepositoryException;
+import utils.ToolsRepositoryException;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,18 +22,18 @@ public class ConfigSupportRepository {
     static {
         try {
             loadSupportedRepositoryInfo();
-        } catch (ToolRepositoryException e) {
+        } catch (ToolsRepositoryException e) {
             throw new RuntimeException("Error loading Github repository configurations", e);
         }
     }
 
-    public static void loadSupportedRepositoryInfo() throws ToolRepositoryException {
+    public static void loadSupportedRepositoryInfo() throws ToolsRepositoryException {
         loadGithubSupport();
     }
 
 
 
-    private static void loadGithubSupport() throws ToolRepositoryException {
+    private static void loadGithubSupport() throws ToolsRepositoryException {
         SupportedRepository github = getRepositoriesSupportedData(GITHUB_REPO_SUPPORT_LABEL);
         if(github != null) {
             github_base_uri = github.base_uri;
@@ -42,7 +42,7 @@ public class ConfigSupportRepository {
         }
     }
 
-    private static SupportedRepository getRepositoriesSupportedData(String nodeName) throws ToolRepositoryException {
+    private static SupportedRepository getRepositoriesSupportedData(String nodeName) throws ToolsRepositoryException {
         URL path = ClassLoader.getSystemClassLoader().getResource("./supported_repositories_types.json");
         JsonParser jsonParser;
         try {
@@ -59,7 +59,7 @@ public class ConfigSupportRepository {
                 }
             }
         } catch (IOException e) {
-            throw new ToolRepositoryException("Couldn't loadSupportedRepositoryInfo repository", e);
+            throw new ToolsRepositoryException("Couldn't loadSupportedRepositoryInfo repository", e);
         }
         return null;
     }

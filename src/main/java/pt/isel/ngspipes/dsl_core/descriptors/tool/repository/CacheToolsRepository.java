@@ -1,8 +1,8 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
-import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
-import utils.ToolRepositoryException;
+import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
+import utils.ToolsRepositoryException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,17 +22,17 @@ public class CacheToolsRepository implements IToolsRepository {
 
 
     @Override
-    public String getLocation() throws ToolRepositoryException {
+    public String getLocation() throws ToolsRepositoryException {
         return source.getLocation();
     }
 
     @Override
-    public Map<String, Object> getConfig() throws ToolRepositoryException {
+    public Map<String, Object> getConfig() throws ToolsRepositoryException {
         return source.getConfig();
     }
 
     @Override
-    public Collection<IToolDescriptor> getAll() throws ToolRepositoryException {
+    public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
         synchronized (lock) {
             Collection<IToolDescriptor> toolsDescriptors = source.getAll();
 
@@ -44,7 +44,7 @@ public class CacheToolsRepository implements IToolsRepository {
     }
 
     @Override
-    public IToolDescriptor get(String toolName) throws ToolRepositoryException {
+    public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
        synchronized (lock) {
            IToolDescriptor toolDescriptor = cache.get(toolName);
 
@@ -58,7 +58,7 @@ public class CacheToolsRepository implements IToolsRepository {
     }
 
     @Override
-    public void update(IToolDescriptor tool) throws ToolRepositoryException {
+    public void update(IToolDescriptor tool) throws ToolsRepositoryException {
         synchronized (lock) {
             source.update(tool);
             cache.put(tool.getName(), tool);
@@ -66,7 +66,7 @@ public class CacheToolsRepository implements IToolsRepository {
     }
 
     @Override
-    public void insert(IToolDescriptor tool) throws ToolRepositoryException {
+    public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
         synchronized (lock) {
             source.insert(tool);
             cache.put(tool.getName(), tool);
@@ -74,7 +74,7 @@ public class CacheToolsRepository implements IToolsRepository {
     }
 
     @Override
-    public void delete(String toolName) throws ToolRepositoryException {
+    public void delete(String toolName) throws ToolsRepositoryException {
         synchronized (lock) {
             source.delete(toolName);
             cache.remove(toolName);

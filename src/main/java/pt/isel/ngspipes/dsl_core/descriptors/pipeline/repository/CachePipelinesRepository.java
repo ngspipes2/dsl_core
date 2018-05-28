@@ -2,7 +2,7 @@ package pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository;
 
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
-import pt.isel.ngspipes.pipeline_repository.PipelineRepositoryException;
+import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,17 +22,17 @@ public class CachePipelinesRepository implements IPipelinesRepository {
     }
 
     @Override
-    public String getLocation() throws PipelineRepositoryException {
+    public String getLocation() throws PipelinesRepositoryException {
         return source.getLocation();
     }
 
     @Override
-    public Map<String, Object> getConfig() throws PipelineRepositoryException {
+    public Map<String, Object> getConfig() throws PipelinesRepositoryException {
         return source.getConfig();
     }
 
     @Override
-    public Collection<IPipelineDescriptor> getAll() throws PipelineRepositoryException {
+    public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
         synchronized (lock) {
             Collection<IPipelineDescriptor> pipelinesDescriptors = source.getAll();
 
@@ -44,7 +44,7 @@ public class CachePipelinesRepository implements IPipelinesRepository {
     }
 
     @Override
-    public IPipelineDescriptor get(String pipelineName) throws PipelineRepositoryException {
+    public IPipelineDescriptor get(String pipelineName) throws PipelinesRepositoryException {
         synchronized (lock) {
             IPipelineDescriptor pipelineDescriptor = cache.get(pipelineName);
 
@@ -58,7 +58,7 @@ public class CachePipelinesRepository implements IPipelinesRepository {
     }
 
     @Override
-    public void insert(IPipelineDescriptor pipeline) throws PipelineRepositoryException {
+    public void insert(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         synchronized (lock) {
             source.insert(pipeline);
             cache.put(pipeline.getName(), pipeline);
@@ -66,7 +66,7 @@ public class CachePipelinesRepository implements IPipelinesRepository {
     }
 
     @Override
-    public void update(IPipelineDescriptor pipeline) throws PipelineRepositoryException {
+    public void update(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         synchronized (lock) {
             source.update(pipeline);
             cache.put(pipeline.getName(), pipeline);
@@ -74,7 +74,7 @@ public class CachePipelinesRepository implements IPipelinesRepository {
     }
 
     @Override
-    public void delete(String pipelineName) throws PipelineRepositoryException {
+    public void delete(String pipelineName) throws PipelinesRepositoryException {
         synchronized (lock) {
             source.delete(pipelineName);
             cache.remove(pipelineName);
