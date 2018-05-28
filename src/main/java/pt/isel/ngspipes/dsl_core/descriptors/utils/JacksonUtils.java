@@ -1,4 +1,4 @@
-package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
+package pt.isel.ngspipes.dsl_core.descriptors.utils;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.Version;
