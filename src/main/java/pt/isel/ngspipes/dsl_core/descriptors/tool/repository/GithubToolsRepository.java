@@ -1,8 +1,8 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.GithubUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsFactoryUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.support.ConfigSupportRepository;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.GithubUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.HttpUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
@@ -10,14 +10,14 @@ import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
-import utils.ToolRepositoryException;
+import utils.ToolsRepositoryException;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class GithubToolsRepository extends ToolsRepository {
+public class  GithubToolsRepository extends ToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String NAMES_KEY = "name";
@@ -28,13 +28,13 @@ public class GithubToolsRepository extends ToolsRepository {
 
 
     // IMPLEMENTATION OF IToolRepositoryFactory
-    public static IToolsRepository create(String location, Map<String, Object> config) throws ToolRepositoryException {
+    public static IToolsRepository create(String location, Map<String, Object> config) throws ToolsRepositoryException {
         if(!verifyLocation(location))
             return null;
         return new GithubToolsRepository(location, config);
     }
 
-    private static boolean verifyLocation(String location) throws ToolRepositoryException {
+    private static boolean verifyLocation(String location) throws ToolsRepositoryException {
         try {
             if(isGithubUri(location)) {
                 String apiLocation =  location.replace(
@@ -45,7 +45,7 @@ public class GithubToolsRepository extends ToolsRepository {
                 return HttpUtils.canConnect(apiLocation);
             }
         } catch (IOException e) {
-            throw new ToolRepositoryException("Could not verify location:" + location, e);
+            throw new ToolsRepositoryException("Could not verify location:" + location, e);
         }
 
         return false;
@@ -67,9 +67,9 @@ public class GithubToolsRepository extends ToolsRepository {
 
     // IMPLEMENTATION OF ToolsRepository
     @Override
-    public Collection<IToolDescriptor> getAll() throws ToolRepositoryException {
+    public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
 
-        Collection<String> names = GithubUtils.getFoldersNames(apiUri, NAMES_KEY);
+        Collection<String> names = getToolsName();
         Collection<IToolDescriptor> tools = new LinkedList<>();
 
         for (String name: names)
@@ -79,7 +79,7 @@ public class GithubToolsRepository extends ToolsRepository {
     }
 
     @Override
-    public IToolDescriptor get(String toolName) throws ToolRepositoryException {
+    public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
         try {
             String descriptorName = getDescriptorName(toolName);
             String toolDescriptorUri = getDescriptorUri(toolName, descriptorName);
@@ -88,41 +88,49 @@ public class GithubToolsRepository extends ToolsRepository {
 
             return createToolDescriptor(toolName, type, content);
         } catch (IOException e) {
-            throw new ToolRepositoryException("Error loading " + toolName + " tool descriptor", e);
+            throw new ToolsRepositoryException("Error loading " + toolName + " tool descriptor", e);
         }
     }
 
     @Override
-    public void update(IToolDescriptor tool) throws ToolRepositoryException {
-        throw new ToolRepositoryException("Update operation not supported");
+    public void update(IToolDescriptor tool) throws ToolsRepositoryException {
+        throw new ToolsRepositoryException("Update operation not supported");
     }
 
     @Override
-    public void insert(IToolDescriptor tool) throws ToolRepositoryException {
-        throw new ToolRepositoryException("Insert operation not supported");
+    public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
+        throw new ToolsRepositoryException("Insert operation not supported");
     }
 
     @Override
-    public void delete(String toolName) throws ToolRepositoryException {
-        throw new ToolRepositoryException("Delete operation not supported");
+    public void delete(String toolName) throws ToolsRepositoryException {
+        throw new ToolsRepositoryException("Delete operation not supported");
     }
 
 
+
+    private Collection<String> getToolsName() throws ToolsRepositoryException {
+        try {
+            return GithubUtils.getFoldersNames(apiUri, NAMES_KEY);
+        } catch(IOException e) {
+            throw new ToolsRepositoryException("Error getting tools names!", e);
+        }
+    }
 
     private String getDescriptorUri(String toolName, String descriptorName) {
         String toolUri = accessUri + SEPARATOR + toolName;
         return toolUri + SEPARATOR + descriptorName;
     }
 
-    private IToolDescriptor createToolDescriptor(String toolName, String type, String content) throws IOException, ToolRepositoryException {
-        ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsFactoryUtils.createToolDescriptor(content, type);
+    private IToolDescriptor createToolDescriptor(String toolName, String type, String content) throws IOException, ToolsRepositoryException {
+        ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsUtils.createToolDescriptor(content, type);
         Collection<IExecutionContextDescriptor> executionContextDescriptors = createExecutionContexts(toolName);
         toolDescriptor.setExecutionContexts(executionContextDescriptors);
         toolDescriptor.setLogo(getLogo(toolName));
         return toolDescriptor;
     }
 
-    private String getDescriptorName(String toolName) throws ToolRepositoryException {
+    private String getDescriptorName(String toolName) throws IOException, ToolsRepositoryException {
         String descriptorName;
         String toolUri = getApiToolUri(toolName);
         Collection<String> names = GithubUtils.getFilesNames(toolUri, NAMES_KEY);
@@ -135,7 +143,7 @@ public class GithubToolsRepository extends ToolsRepository {
             }
         }
 
-        throw new ToolRepositoryException("Couldn't find descriptor for tool" + toolName);
+        throw new ToolsRepositoryException("Couldn't find descriptor for tool" + toolName);
     }
 
     private String getApiToolUri(String toolName) {
@@ -159,7 +167,7 @@ public class GithubToolsRepository extends ToolsRepository {
         return null;
     }
 
-    private Collection<IExecutionContextDescriptor> createExecutionContexts(String toolName) throws IOException, ToolRepositoryException {
+    private Collection<IExecutionContextDescriptor> createExecutionContexts(String toolName) throws IOException, ToolsRepositoryException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
         Collection<String> names = getExecutionContextsNames(toolName);
         String executionAccessUri =  getAccessToolUri(toolName) + EXECUTION_CONTEXTS_SUB_URI;
@@ -169,14 +177,14 @@ public class GithubToolsRepository extends ToolsRepository {
             uriCtx = executionAccessUri + SEPARATOR + name;
             String type = IOUtils.getExtensionFromFilePath(name);
             String content = HttpUtils.get(uriCtx);
-            IExecutionContextDescriptor context = ToolsDescriptorsFactoryUtils.createExecutionContextDescriptor(content, type);
+            IExecutionContextDescriptor context = ToolsDescriptorsUtils.createExecutionContextDescriptor(content, type);
             contexts.add(context);
         }
 
         return contexts;
     }
 
-    private Collection<String> getExecutionContextsNames(String toolName) throws ToolRepositoryException {
+    private Collection<String> getExecutionContextsNames(String toolName) throws IOException {
         return GithubUtils.getFilesNames(getApiExecutionContextUri(toolName), NAMES_KEY);
     }
 
@@ -194,4 +202,5 @@ public class GithubToolsRepository extends ToolsRepository {
         apiUri = location.replace(ConfigSupportRepository.github_base_uri, ConfigSupportRepository.github_api_uri);
         apiUri = apiUri + "/contents";
     }
+
 }
