@@ -7,12 +7,22 @@ import static junit.framework.TestCase.assertTrue;
 
 public class IOUtilsTests {
 
+    private static final String LOCATION;
+
+
+
+    static {
+        LOCATION = ClassLoader.getSystemResource("tools_repo").getPath();
+    }
+
+
+
     @Test
     public void loadDirectoryFilesName() {
 
         //Arrange
         String expectedName = "Descriptor.json";
-        String path = IOUtilsTests.class.getProtectionDomain().getCodeSource().getLocation().getPath() + "../../../../../../tools_support/Trimmomatic/";
+        String path = LOCATION + "/Trimmomatic/";
 
         //Act
         Collection<String> names = IOUtils.getDirectoryFilesName(path);
@@ -27,7 +37,7 @@ public class IOUtilsTests {
 
         //Arrange
         String expectedName = "execution_contexts";
-        String path = IOUtilsTests.class.getProtectionDomain().getCodeSource().getLocation().getPath() + "../../../../../../tools_support/Trimmomatic";
+        String path = LOCATION + "/Trimmomatic/";
 
         //Act
         Collection<String> names = IOUtils.getSubDirectoriesName(path);
