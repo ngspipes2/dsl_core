@@ -6,9 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
 public class JacksonUtils {
 
+
+    public static ObjectMapper getObjecTMapper() {
+        return getJSONMapper();
+    }
 
     public static ObjectMapper getObjectMapper(JsonFactory factory) {
         return getObjectMapper(factory, null);
@@ -16,15 +21,47 @@ public class JacksonUtils {
 
     public static ObjectMapper getObjectMapper(JsonFactory factory, SimpleAbstractTypeResolver resolver) {
         ObjectMapper objectMapper = new ObjectMapper(factory);
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        initMapper(objectMapper, resolver);
+
+        return objectMapper;
+    }
+
+
+    public static ObjectMapper getJSONMapper() {
+        return getJSONMapper(null);
+    }
+
+    public static ObjectMapper getJSONMapper(SimpleAbstractTypeResolver resolver) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        initMapper(objectMapper, resolver);
+
+        return objectMapper;
+    }
+
+
+    public static ObjectMapper getYAMLMapper() {
+        return getYAMLMapper(null);
+    }
+
+    public static ObjectMapper getYAMLMapper(SimpleAbstractTypeResolver resolver) {
+        ObjectMapper objectMapper = new YAMLMapper();
+
+        initMapper(objectMapper, resolver);
+
+        return objectMapper;
+    }
+
+
+    private static void initMapper(ObjectMapper mapper, SimpleAbstractTypeResolver resolver) {
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         if(resolver != null) {
             SimpleModule module = new SimpleModule("CustomModel", Version.unknownVersion());
             module.setAbstractTypes(resolver);
-            objectMapper.registerModule(module);
+            mapper.registerModule(module);
         }
-
-        return  objectMapper;
     }
 
 }
