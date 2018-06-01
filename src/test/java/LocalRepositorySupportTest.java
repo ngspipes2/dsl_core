@@ -44,24 +44,15 @@ public class LocalRepositorySupportTest {
         String name = "Blast";
         String newName = "Blast1";
 
-        // Act
         try {
             LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
             IToolDescriptor toolDescriptor = localRepository.get(name);
+            toolDescriptor.setName(newName);
 
             int sizeBeforeInsert = localRepository.getAll().size();
 
-            ToolDescriptor newTool = new ToolDescriptor();
-            newTool.setAuthor(toolDescriptor.getAuthor());
-            newTool.setName(newName);
-            newTool.setCommands(toolDescriptor.getCommands());
-            newTool.setDescription(toolDescriptor.getDescription());
-            newTool.setLogo(toolDescriptor.getLogo());
-            newTool.setVersion(toolDescriptor.getVersion());
-            newTool.setDocumentation(toolDescriptor.getDocumentation());
-            newTool.setExecutionContexts(toolDescriptor.getExecutionContexts());
-
-            localRepository.insert(newTool);
+            // Act
+            localRepository.insert(toolDescriptor);
 
             //Assert
             int expected = sizeBeforeInsert + 1;
@@ -95,30 +86,18 @@ public class LocalRepositorySupportTest {
         String name = "Blast";
         String newName = "Blast1";
 
-        // Act
         try {
             LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
             IToolDescriptor toolDescriptor = localRepository.get(name);
+            toolDescriptor.setName(newName);
+            localRepository.insert(toolDescriptor);
 
-            int sizeBeforeInsert = localRepository.getAll().size();
-
-            ToolDescriptor newTool = new JacksonToolDescriptor();
-            newTool.setAuthor(toolDescriptor.getAuthor());
-            newTool.setName(newName);
-            newTool.setCommands(toolDescriptor.getCommands());
-            newTool.setDescription(toolDescriptor.getDescription());
-            newTool.setLogo(toolDescriptor.getLogo());
-            newTool.setVersion(toolDescriptor.getVersion());
-            newTool.setDocumentation(toolDescriptor.getDocumentation());
-            newTool.setExecutionContexts(toolDescriptor.getExecutionContexts());
-
-            localRepository.insert(newTool);
-
-            ToolDescriptor toUpdate = (ToolDescriptor) localRepository.get(newName);
+            IToolDescriptor toUpdate = localRepository.get(newName);
             String newAuthor = "Calmen";
             toUpdate.setAuthor(newAuthor);
             localRepository.update(toUpdate);
 
+            // Act
             IToolDescriptor updated = localRepository.get(newName);
 
             //Assert
@@ -137,7 +116,7 @@ public class LocalRepositorySupportTest {
 
         // Act
         LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
-        ToolDescriptor toUpdate = new JacksonToolDescriptor();
+        ToolDescriptor toUpdate = new ToolDescriptor();
         toUpdate.setName(name);
         localRepository.update(toUpdate);
 
@@ -151,24 +130,16 @@ public class LocalRepositorySupportTest {
         String name = "Blast";
         String newName = "Blast1";
 
-        // Act
+
         try {
             LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
             IToolDescriptor toolDescriptor = localRepository.get(name);
-
+            toolDescriptor.setName(newName);
             int sizeBeforeInsert = localRepository.getAll().size();
 
-            ToolDescriptor newTool = new JacksonToolDescriptor();
-            newTool.setAuthor(toolDescriptor.getAuthor());
-            newTool.setName(newName);
-            newTool.setCommands(toolDescriptor.getCommands());
-            newTool.setDescription(toolDescriptor.getDescription());
-            newTool.setLogo(toolDescriptor.getLogo());
-            newTool.setVersion(toolDescriptor.getVersion());
-            newTool.setDocumentation(toolDescriptor.getDocumentation());
-            newTool.setExecutionContexts(toolDescriptor.getExecutionContexts());
+            localRepository.insert(toolDescriptor);
 
-            localRepository.insert(newTool);
+            // Act
             localRepository.delete(newName);
 
 

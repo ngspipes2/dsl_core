@@ -2,11 +2,16 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonCommandDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonParameterDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonToolDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.ICommandDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.IParameterDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
@@ -52,6 +57,7 @@ public class LocalToolsRepository extends ToolsRepository {
         this.serializationFormat = serializationFormat;
     }
 
+
     @Override
     public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
 
@@ -79,6 +85,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
     @Override
     public void update(IToolDescriptor tool) throws ToolsRepositoryException {
+        IToolDescriptor toolToUpdate = transformToJacksonToolDescriptor(tool);
         String toolPath = location + SEPARATOR + tool.getName();
 
         if (!IOUtils.existDirectory(toolPath))
@@ -118,6 +125,45 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
 
+    private JacksonToolDescriptor transformToJacksonToolDescriptor(IToolDescriptor tool) {
+        Collection<ICommandDescriptor> commands = transformToJacksonCommandsDescriptors(tool.getCommands());
+        tool.setCommands(commands);
+        return new JacksonToolDescriptor(tool);
+    }
+
+    private Collection<ICommandDescriptor> transformToJacksonCommandsDescriptors(Collection<ICommandDescriptor> commands) {
+        Collection<ICommandDescriptor> jacksonCommands = new LinkedList<>();
+
+        if (commands == null)
+            return jacksonCommands;
+
+        for (ICommandDescriptor command : commands)
+            jacksonCommands.add(transformToJacksonCommandDescriptor(command));
+
+        return jacksonCommands;
+    }
+
+    private JacksonCommandDescriptor transformToJacksonCommandDescriptor(ICommandDescriptor command) {
+        Collection<IParameterDescriptor> parameters = transformToJacksonParametersDescriptors(command.getParameters());
+        command.setParameters(parameters);
+        return new JacksonCommandDescriptor(command);
+    }
+
+    private Collection<IParameterDescriptor> transformToJacksonParametersDescriptors(Collection<IParameterDescriptor> parameters) {
+        Collection<IParameterDescriptor> jacksonParameters = new LinkedList<>();
+
+        if (parameters == null)
+            return jacksonParameters;
+
+        for (IParameterDescriptor parameter : parameters)
+            jacksonParameters.add(transformToJacksonParameterDescriptor(parameter));
+
+        return jacksonParameters;
+    }
+
+    private JacksonParameterDescriptor transformToJacksonParameterDescriptor(IParameterDescriptor parameter) {
+        return new JacksonParameterDescriptor(parameter);
+    }
 
     private void updateTool(IToolDescriptor tool, String toolPath, String type, String toolDescriptorPath) throws IOException, ToolsRepositoryException {
         String descriptorAsString = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, type);
