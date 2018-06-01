@@ -7,7 +7,7 @@ import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonCommandDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonParameterDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonToolDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.utils.SerializationUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.OutputDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
@@ -17,10 +17,10 @@ import utils.ToolsRepositoryException;
 public class ToolsDescriptorsUtils {
 
     public static IToolDescriptor createToolDescriptor(String content, String fileExtension) throws ToolsRepositoryException {
-        SerializationUtils.SerializationFormat format;
+        Serialization.Format format;
 
         try {
-            format = SerializationUtils.getFormatFromFileExtension(fileExtension);
+            format = Serialization.getFormatFromFileExtension(fileExtension);
         } catch (DSLCoreException e) {
             throw new ToolsRepositoryException(e.getMessage(), e);
         }
@@ -28,20 +28,20 @@ public class ToolsDescriptorsUtils {
         return createToolDescriptor(content, format);
     }
 
-    public static IToolDescriptor createToolDescriptor(String content, SerializationUtils.SerializationFormat format) throws ToolsRepositoryException {
+    public static IToolDescriptor createToolDescriptor(String content, Serialization.Format format) throws ToolsRepositoryException {
         try {
             JavaType klass = new ObjectMapper().getTypeFactory().constructType(ToolDescriptor.class);
-            return SerializationUtils.deserialize(content, format, klass, getToolResolver());
+            return Serialization.deserialize(content, format, klass, getToolResolver());
         } catch (DSLCoreException e) {
             throw new ToolsRepositoryException("Error deserialize ToolDescriptor!", e);
         }
     }
 
     public static IExecutionContextDescriptor createExecutionContextDescriptor(String content, String fileExtension) throws ToolsRepositoryException {
-        SerializationUtils.SerializationFormat format;
+        Serialization.Format format;
 
         try {
-            format = SerializationUtils.getFormatFromFileExtension(fileExtension);
+            format = Serialization.getFormatFromFileExtension(fileExtension);
         } catch (DSLCoreException e) {
             throw new ToolsRepositoryException(e.getMessage(), e);
         }
@@ -49,10 +49,10 @@ public class ToolsDescriptorsUtils {
         return createExecutionContextDescriptor(content, format);
     }
 
-    public static IExecutionContextDescriptor createExecutionContextDescriptor(String content, SerializationUtils.SerializationFormat format) throws ToolsRepositoryException {
+    public static IExecutionContextDescriptor createExecutionContextDescriptor(String content, Serialization.Format format) throws ToolsRepositoryException {
         try {
             JavaType klass = new ObjectMapper().getTypeFactory().constructType(ExecutionContextDescriptor.class);
-            return SerializationUtils.deserialize(content, format, klass, getExecutionContextResolver());
+            return Serialization.deserialize(content, format, klass, getExecutionContextResolver());
         } catch (DSLCoreException e) {
             throw new ToolsRepositoryException("Error deserialize ExecutionContext!", e);
         }
@@ -60,10 +60,10 @@ public class ToolsDescriptorsUtils {
 
 
     public static String getToolDescriptorAsString(IToolDescriptor tool, String fileExtension) throws ToolsRepositoryException {
-        SerializationUtils.SerializationFormat format;
+        Serialization.Format format;
 
         try {
-            format = SerializationUtils.getFormatFromFileExtension(fileExtension);
+            format = Serialization.getFormatFromFileExtension(fileExtension);
         }catch (DSLCoreException e) {
             throw new ToolsRepositoryException(e.getMessage(), e);
         }
@@ -71,19 +71,19 @@ public class ToolsDescriptorsUtils {
         return getToolDescriptorAsString(tool, format);
     }
 
-    public static String getToolDescriptorAsString(IToolDescriptor tool, SerializationUtils.SerializationFormat format) throws ToolsRepositoryException {
+    public static String getToolDescriptorAsString(IToolDescriptor tool, Serialization.Format format) throws ToolsRepositoryException {
         try {
-            return SerializationUtils.serialize(tool, format, getToolResolver());
+            return Serialization.serialize(tool, format, getToolResolver());
         }catch (DSLCoreException e) {
             throw new ToolsRepositoryException("Error serializing ToolDescriptor!", e);
         }
     }
 
     public static String getExecutionContextDescriptorAsString(IExecutionContextDescriptor ctx, String fileExtension) throws ToolsRepositoryException {
-        SerializationUtils.SerializationFormat format;
+        Serialization.Format format;
 
         try {
-            format = SerializationUtils.getFormatFromFileExtension(fileExtension);
+            format = Serialization.getFormatFromFileExtension(fileExtension);
         }catch (DSLCoreException e) {
             throw new ToolsRepositoryException(e.getMessage(), e);
         }
@@ -91,9 +91,9 @@ public class ToolsDescriptorsUtils {
         return getExecutionContextDescriptorAsString(ctx, format);
     }
 
-    public static String getExecutionContextDescriptorAsString(IExecutionContextDescriptor ctx, SerializationUtils.SerializationFormat format) throws ToolsRepositoryException {
+    public static String getExecutionContextDescriptorAsString(IExecutionContextDescriptor ctx, Serialization.Format format) throws ToolsRepositoryException {
         try {
-            return SerializationUtils.serialize(ctx, format, getExecutionContextResolver());
+            return Serialization.serialize(ctx, format, getExecutionContextResolver());
         }catch (DSLCoreException e) {
             throw new ToolsRepositoryException("Error serializing ExecutionContext!", e);
         }

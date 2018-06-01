@@ -4,7 +4,7 @@ import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.utils.SerializationUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
@@ -39,7 +39,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
 
-    private SerializationUtils.SerializationFormat serializationFormat;
+    private Serialization.Format serializationFormat;
 
 
 
@@ -47,7 +47,7 @@ public class LocalToolsRepository extends ToolsRepository {
         this(location, config, Configuration.DEFAULT_TOOL_SERIALIZATION_FORMAT);
     }
 
-    public LocalToolsRepository(String location, Map<String, Object> config, SerializationUtils.SerializationFormat serializationFormat) {
+    public LocalToolsRepository(String location, Map<String, Object> config, Serialization.Format serializationFormat) {
         super(location, config);
         this.serializationFormat = serializationFormat;
     }
@@ -223,7 +223,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
     private String getExtension() throws ToolsRepositoryException {
         try {
-            return SerializationUtils.getFileExtensionFromFormat(serializationFormat);
+            return Serialization.getFileExtensionFromFormat(serializationFormat);
         } catch (DSLCoreException e) {
             throw new ToolsRepositoryException(e.getMessage(), e);
         }
