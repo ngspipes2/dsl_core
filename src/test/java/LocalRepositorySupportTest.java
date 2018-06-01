@@ -5,35 +5,33 @@ import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import utils.ToolsRepositoryException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class LocalRepositorySupportTest {
 
+    private static final String LOCATION;
 
-    @Test
-    public void localRepositorySupportTest() {
-        //Arrange
-        String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
-        // Act
-        LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
 
-        //Assert
+    static {
+        LOCATION = ClassLoader.getSystemResource("tools_repo").getPath();
     }
+
+
 
     @Test
     public void localRepositoryGetToolTest() {
         //Arrange
         String name = "Blast";
-        String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
         // Act
         try {
-            LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
+            LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
             IToolDescriptor toolDescriptor = localRepository.get(name);
             assertEquals(2, toolDescriptor.getExecutionContexts().size());
         } catch(ToolsRepositoryException e) {
-            fail("Slouhdn't throw exception");
+            fail("Shouldn't throw exception");
         }
 
         //Assert
@@ -45,16 +43,15 @@ public class LocalRepositorySupportTest {
         //Arrange
         String name = "Blast";
         String newName = "Blast1";
-        String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
         // Act
         try {
-            LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
+            LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
             IToolDescriptor toolDescriptor = localRepository.get(name);
 
             int sizeBeforeInsert = localRepository.getAll().size();
 
-            ToolDescriptor newTool = new JacksonToolDescriptor();
+            ToolDescriptor newTool = new ToolDescriptor();
             newTool.setAuthor(toolDescriptor.getAuthor());
             newTool.setName(newName);
             newTool.setCommands(toolDescriptor.getCommands());
@@ -69,11 +66,11 @@ public class LocalRepositorySupportTest {
             //Assert
             int expected = sizeBeforeInsert + 1;
             int size = localRepository.getAll().size();
-            assertEquals(expected, size);
+             assertEquals(expected, size);
 
             localRepository.delete(newName);
         } catch(ToolsRepositoryException e) {
-            fail("Slouhdn't throw exception");
+            fail("Shouldn't throw exception");
         }
     }
 
@@ -82,10 +79,9 @@ public class LocalRepositorySupportTest {
     public void localRepositoryInsertExistentToolTest() throws ToolsRepositoryException {
         //Arrange
         String name = "Blast";
-        String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
         // Act
-        LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
+        LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
         IToolDescriptor toolDescriptor = localRepository.get(name);
         localRepository.insert(toolDescriptor);
 
@@ -98,11 +94,10 @@ public class LocalRepositorySupportTest {
         //Arrange
         String name = "Blast";
         String newName = "Blast1";
-        String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
         // Act
         try {
-            LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
+            LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
             IToolDescriptor toolDescriptor = localRepository.get(name);
 
             int sizeBeforeInsert = localRepository.getAll().size();
@@ -131,7 +126,7 @@ public class LocalRepositorySupportTest {
 
             localRepository.delete(newName);
         } catch(ToolsRepositoryException e) {
-            fail("Slouhdn't throw exception");
+            fail("Shouldn't throw exception");
         }
     }
 
@@ -139,10 +134,9 @@ public class LocalRepositorySupportTest {
     public void localRepositoryUpdateNotExistentToolTest() throws ToolsRepositoryException {
         //Arrange
         String name = "BlastN";
-        String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
         // Act
-        LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
+        LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
         ToolDescriptor toUpdate = new JacksonToolDescriptor();
         toUpdate.setName(name);
         localRepository.update(toUpdate);
@@ -156,11 +150,10 @@ public class LocalRepositorySupportTest {
         //Arrange
         String name = "Blast";
         String newName = "Blast1";
-        String location = "E:\\Work\\NGSPipes\\ngspipes2\\tools_support_local";
 
         // Act
         try {
-            LocalToolsRepository localRepository = new LocalToolsRepository(location, null);
+            LocalToolsRepository localRepository = new LocalToolsRepository(LOCATION, null);
             IToolDescriptor toolDescriptor = localRepository.get(name);
 
             int sizeBeforeInsert = localRepository.getAll().size();
@@ -183,7 +176,7 @@ public class LocalRepositorySupportTest {
             int size = localRepository.getAll().size();
             assertEquals(sizeBeforeInsert, size);
         } catch(ToolsRepositoryException e) {
-            fail("Slouhdn't throw exception");
+            fail("Shouldn't throw exception");
         }
     }
 }
