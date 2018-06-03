@@ -64,12 +64,13 @@ public class Serialization {
 
 
     public static Format getFormatFromHttpHeader(String httpHeader) throws DSLCoreException {
-        switch (httpHeader) {
-            case "application/json": return Format.JSON;
-            case "application/x-yaml": return Format.YAML;
-        }
+        if(httpHeader.contains("application/json"))
+            return Format.JSON;
 
-        throw new DSLCoreException("Unknown file http header:" + httpHeader);
+        if(httpHeader.contains("application/x-yaml"))
+            return Format.YAML;
+
+        throw new DSLCoreException("Unknown http header:" + httpHeader);
     }
 
     public static String getHttpHeaderFromFormat(Format format) throws DSLCoreException {
