@@ -2,16 +2,12 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonCommandDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonParameterDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.JacksonEntityService;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
-import pt.isel.ngspipes.tool_descriptor.interfaces.ICommandDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
-import pt.isel.ngspipes.tool_descriptor.interfaces.IParameterDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
@@ -73,6 +69,10 @@ public class LocalToolsRepository extends ToolsRepository {
     @Override
     public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
         String toolPath = location + SEPARATOR + toolName;
+
+        if(!IOUtils.existDirectory(toolPath))
+            return null;
+
         String descriptorName = getDescriptorName(toolPath);
         String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
         String type = IOUtils.getExtensionFromFilePath(descriptorName);
@@ -85,25 +85,18 @@ public class LocalToolsRepository extends ToolsRepository {
 
     @Override
     public void update(IToolDescriptor tool) throws ToolsRepositoryException {
-        IToolDescriptor toolToUpdate = transformToJacksonToolDescriptor(tool);
         String toolPath = location + SEPARATOR + tool.getName();
 
-        if (!IOUtils.existDirectory(toolPath))
-            throw new ToolsRepositoryException("Can't find a tool with name: " + tool.getName());
+        if(!IOUtils.existDirectory(toolPath))
+            throw new ToolsRepositoryException("There is already a tool with name: " + tool.getName());
 
-        String descriptorName = getDescriptorName(toolPath);
-        String type = IOUtils.getExtensionFromFilePath(descriptorName);
-        String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
-
-        try {
-            updateTool(tool, toolPath, type, toolDescriptorPath);
-        } catch (IOException e) {
-            throw new ToolsRepositoryException("Error updating " + tool.getName() + " tool descriptor", e);
-        }
+        delete(tool.getName());
+        insert(tool);
     }
 
     @Override
     public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
+        tool = JacksonEntityService.transformToJacksonToolDescriptor(tool);
         String toolPath = location + SEPARATOR + tool.getName();
 
         if(IOUtils.existDirectory(toolPath))
@@ -124,67 +117,15 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
 
-
-    private JacksonToolDescriptor transformToJacksonToolDescriptor(IToolDescriptor tool) {
-        Collection<ICommandDescriptor> commands = transformToJacksonCommandsDescriptors(tool.getCommands());
-        tool.setCommands(commands);
-        return new JacksonToolDescriptor(tool);
-    }
-
-    private Collection<ICommandDescriptor> transformToJacksonCommandsDescriptors(Collection<ICommandDescriptor> commands) {
-        Collection<ICommandDescriptor> jacksonCommands = new LinkedList<>();
-
-        if (commands == null)
-            return jacksonCommands;
-
-        for (ICommandDescriptor command : commands)
-            jacksonCommands.add(transformToJacksonCommandDescriptor(command));
-
-        return jacksonCommands;
-    }
-
-    private JacksonCommandDescriptor transformToJacksonCommandDescriptor(ICommandDescriptor command) {
-        Collection<IParameterDescriptor> parameters = transformToJacksonParametersDescriptors(command.getParameters());
-        command.setParameters(parameters);
-        return new JacksonCommandDescriptor(command);
-    }
-
-    private Collection<IParameterDescriptor> transformToJacksonParametersDescriptors(Collection<IParameterDescriptor> parameters) {
-        Collection<IParameterDescriptor> jacksonParameters = new LinkedList<>();
-
-        if (parameters == null)
-            return jacksonParameters;
-
-        for (IParameterDescriptor parameter : parameters)
-            jacksonParameters.add(transformToJacksonParameterDescriptor(parameter));
-
-        return jacksonParameters;
-    }
-
-    private JacksonParameterDescriptor transformToJacksonParameterDescriptor(IParameterDescriptor parameter) {
-        return new JacksonParameterDescriptor(parameter);
-    }
-
-    private void updateTool(IToolDescriptor tool, String toolPath, String type, String toolDescriptorPath) throws IOException, ToolsRepositoryException {
-        String descriptorAsString = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, type);
-        IOUtils.write(descriptorAsString, toolDescriptorPath);
-
-        Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
-        updateExecutionContexts(toolPath, executionContexts);
-
-        IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
-    }
-
     private void insertTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath) throws IOException, ToolsRepositoryException {
         String descriptorAsString = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, serializationFormat);
         IOUtils.write(descriptorAsString, toolDescriptorPath);
 
         Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
-        if(executionContexts == null || executionContexts.isEmpty())
-            throw new ToolsRepositoryException("A tool must have at least an execution context");
         writeExecutionContexts(toolPath, executionContexts);
 
-        IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
+        if(tool.getLogo() != null)
+            IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
     }
 
     private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException, ToolsRepositoryException {
@@ -200,32 +141,13 @@ public class LocalToolsRepository extends ToolsRepository {
         String dirPath = toolPath + EXECUTION_CONTEXTS_DIRECTORY;
         IOUtils.createFolder(dirPath);
 
+        if(executionContexts == null)
+            return;
+
         for (IExecutionContextDescriptor ctx : executionContexts) {
             String currCtx = ToolsDescriptorsUtils.getExecutionContextDescriptorAsString(ctx, serializationFormat);
             IOUtils.write(currCtx, dirPath + SEPARATOR + ctx.getName() + "." + getExtension());
         }
-    }
-
-    private void updateExecutionContexts(String toolPath, Collection<IExecutionContextDescriptor> executionContexts) throws IOException, ToolsRepositoryException {
-        String executionCtx = toolPath + EXECUTION_CONTEXTS_DIRECTORY;
-        Collection<String> names = IOUtils.getDirectoryFilesName(executionCtx);
-        String pathCtx;
-
-        for (String name: names) {
-            pathCtx = executionCtx + "/" + name;
-            String type = IOUtils.getExtensionFromFilePath(name);
-            IExecutionContextDescriptor ctx = getExecutionContextByName(executionContexts, name);
-            String currCtx = ToolsDescriptorsUtils.getExecutionContextDescriptorAsString(ctx, type);
-            IOUtils.write(currCtx, pathCtx);
-        }
-    }
-
-    private IExecutionContextDescriptor getExecutionContextByName(Collection<IExecutionContextDescriptor> executionContexts, String name) {
-        IExecutionContextDescriptor ctx = null;
-        for (IExecutionContextDescriptor execCtx : executionContexts)
-            if (execCtx.getName().equals(name))
-                ctx = execCtx;
-        return ctx;
     }
 
     private String getDescriptorName(String toolPath) throws ToolsRepositoryException {
