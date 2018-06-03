@@ -10,7 +10,7 @@ import tools.servers.EmptyToolsRepositoryServer;
 import tools.servers.NotToolsRepositoryServer;
 import utils.ToolsRepositoryException;
 
-public class ServerRepositorySupportTest {
+public class ServerRepositoryTest {
 
     private static String location;
     private static String emptyLocation;

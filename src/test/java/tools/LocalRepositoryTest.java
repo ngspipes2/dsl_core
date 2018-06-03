@@ -4,7 +4,7 @@ import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.LocalToolsRepository;
 import utils.ToolsRepositoryException;
 
-public class LocalRepositorySupportTest {
+public class LocalRepositoryTest {
 
     private static final String LOCATION;
     private static final String EMPTY_LOCATION;

@@ -4,7 +4,7 @@ import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsRepository;
 import utils.ToolsRepositoryException;
 
-public class GitHubRepositorySupportTest {
+public class GitHubRepositoryTest {
 
     private static final String LOCATION = "https://github.com/ngspipes2/tools_support";
     private static final String EMPTY_LOCATION = "https://github.com/ngspipes2/empty_repository";
