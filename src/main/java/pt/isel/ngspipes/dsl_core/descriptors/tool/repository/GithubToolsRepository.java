@@ -1,9 +1,7 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.support.ConfigSupportRepository;
-import pt.isel.ngspipes.dsl_core.descriptors.utils.GithubUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.utils.HttpUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.utils.GithubAPI;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
@@ -20,11 +18,9 @@ import java.util.Map;
 public class  GithubToolsRepository extends ToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
-    private static final String NAMES_KEY = "name";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
-    private static final String PARAMETER_API_QUERY = "?ref=master";
     private static final String SEPARATOR = "/";
-    private static final String EXECUTION_CONTEXTS_SUB_URI = "/execution_contexts";
+    private static final String EXECUTION_CONTEXTS_SUB_URI = "execution_contexts";
 
 
     // IMPLEMENTATION OF IToolRepositoryFactory
@@ -36,14 +32,8 @@ public class  GithubToolsRepository extends ToolsRepository {
 
     private static boolean verifyLocation(String location) throws ToolsRepositoryException {
         try {
-            if(isGithubUri(location)) {
-                String apiLocation =  location.replace(
-                        ConfigSupportRepository.github_base_uri,
-                        ConfigSupportRepository.github_api_uri);
-                apiLocation += "/contents";
-
-                return HttpUtils.canConnect(apiLocation);
-            }
+            if(GithubAPI.isGithubUri(location))
+                return GithubAPI.existsRepository(location);
         } catch (IOException e) {
             throw new ToolsRepositoryException("Could not verify location:" + location, e);
         }
@@ -51,18 +41,10 @@ public class  GithubToolsRepository extends ToolsRepository {
         return false;
     }
 
-    private static boolean isGithubUri(String location) {
-        return location.startsWith(ConfigSupportRepository.github_base_uri);
-    }
-
-
-    private String accessUri;
-    private String apiUri;
 
 
     public GithubToolsRepository(String location, Map<String, Object> config) {
         super(location, config);
-        load();
     }
 
     // IMPLEMENTATION OF ToolsRepository
@@ -81,9 +63,12 @@ public class  GithubToolsRepository extends ToolsRepository {
     @Override
     public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
         try {
+            if(!getToolsName().contains(toolName))
+                return null;
+
             String descriptorName = getDescriptorName(toolName);
-            String toolDescriptorUri = getDescriptorUri(toolName, descriptorName);
-            String content = HttpUtils.get(toolDescriptorUri);
+            String descriptorPath = toolName + SEPARATOR + descriptorName;
+            String content = GithubAPI.getFileContent(location, descriptorPath);
             String type = IOUtils.getExtensionFromFilePath(descriptorName);
 
             return createToolDescriptor(toolName, type, content);
@@ -111,20 +96,15 @@ public class  GithubToolsRepository extends ToolsRepository {
 
     private Collection<String> getToolsName() throws ToolsRepositoryException {
         try {
-            return GithubUtils.getFoldersNames(apiUri, NAMES_KEY);
+            return GithubAPI.getFoldersNames(location);
         } catch(IOException e) {
             throw new ToolsRepositoryException("Error getting tools names!", e);
         }
     }
 
-    private String getDescriptorUri(String toolName, String descriptorName) {
-        String toolUri = accessUri + SEPARATOR + toolName;
-        return toolUri + SEPARATOR + descriptorName;
-    }
-
     private IToolDescriptor createToolDescriptor(String toolName, String type, String content) throws IOException, ToolsRepositoryException {
         ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsUtils.createToolDescriptor(content, type);
-        Collection<IExecutionContextDescriptor> executionContextDescriptors = createExecutionContexts(toolName);
+        Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolName);
         toolDescriptor.setExecutionContexts(executionContextDescriptors);
         toolDescriptor.setLogo(getLogo(toolName));
         return toolDescriptor;
@@ -132,8 +112,7 @@ public class  GithubToolsRepository extends ToolsRepository {
 
     private String getDescriptorName(String toolName) throws IOException, ToolsRepositoryException {
         String descriptorName;
-        String toolUri = getApiToolUri(toolName);
-        Collection<String> names = GithubUtils.getFilesNames(toolUri, NAMES_KEY);
+        Collection<String> names = GithubAPI.getFilesNames(location, toolName);
         for (String currName: names) {
             String type = IOUtils.getExtensionFromFilePath(currName);
             descriptorName = currName;
@@ -146,37 +125,24 @@ public class  GithubToolsRepository extends ToolsRepository {
         throw new ToolsRepositoryException("Couldn't find descriptor for tool" + toolName);
     }
 
-    private String getApiToolUri(String toolName) {
-        return apiUri + SEPARATOR + toolName + PARAMETER_API_QUERY;
-    }
-
-    private String getApiExecutionContextUri(String toolName) {
-        return apiUri + SEPARATOR + toolName + EXECUTION_CONTEXTS_SUB_URI + PARAMETER_API_QUERY;
-    }
-
-    private String getAccessToolUri(String toolName) {
-        return accessUri + SEPARATOR + toolName;
-    }
-
     private byte[] getLogo(String toolName) throws IOException {
-        String logoUri = getAccessToolUri(toolName) + SEPARATOR + LOGO_FILE_NAME;
+        Collection<String> files = GithubAPI.getFilesNames(location, toolName);
 
-        if(HttpUtils.canConnect(logoUri))
-            return HttpUtils.getBytes(logoUri);
+        if(files.contains(LOGO_FILE_NAME))
+            return GithubAPI.getFileBytes(location, toolName + SEPARATOR + LOGO_FILE_NAME);
 
         return null;
     }
 
-    private Collection<IExecutionContextDescriptor> createExecutionContexts(String toolName) throws IOException, ToolsRepositoryException {
+    private Collection<IExecutionContextDescriptor> getExecutionContexts(String toolName) throws IOException, ToolsRepositoryException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
         Collection<String> names = getExecutionContextsNames(toolName);
-        String executionAccessUri =  getAccessToolUri(toolName) + EXECUTION_CONTEXTS_SUB_URI;
-        String uriCtx;
+        String contextPath;
 
         for (String name: names) {
-            uriCtx = executionAccessUri + SEPARATOR + name;
+            contextPath = toolName + SEPARATOR  + EXECUTION_CONTEXTS_SUB_URI + SEPARATOR + name;
             String type = IOUtils.getExtensionFromFilePath(name);
-            String content = HttpUtils.get(uriCtx);
+            String content = GithubAPI.getFileContent(location, contextPath);
             IExecutionContextDescriptor context = ToolsDescriptorsUtils.createExecutionContextDescriptor(content, type);
             contexts.add(context);
         }
@@ -185,22 +151,8 @@ public class  GithubToolsRepository extends ToolsRepository {
     }
 
     private Collection<String> getExecutionContextsNames(String toolName) throws IOException {
-        return GithubUtils.getFilesNames(getApiExecutionContextUri(toolName), NAMES_KEY);
-    }
-
-    private void load() {
-        setAccessUri();
-        setApiUri();
-    }
-
-    private void setAccessUri() {
-        accessUri = location.replace(ConfigSupportRepository.github_base_uri, ConfigSupportRepository.github_access_uri);
-        accessUri = accessUri + "/master";
-    }
-
-    private void setApiUri() {
-        apiUri = location.replace(ConfigSupportRepository.github_base_uri, ConfigSupportRepository.github_api_uri);
-        apiUri = apiUri + "/contents";
+        String directory = toolName + SEPARATOR + EXECUTION_CONTEXTS_SUB_URI;
+        return GithubAPI.getFilesNames(location, directory);
     }
 
 }
