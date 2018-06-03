@@ -89,9 +89,9 @@ public class SerializationTest {
         assertPerson(person);
     }
 
-    @Test
+    @Test(expected =  DSLCoreException.class)
     public void deserializeFromInvalidYAMLTest() throws Exception {
-        String str = "name: \"A\"\nfriends:\n- name: \"B\"\n  friends: []\n- name: \"C\"\n  friends: ";
+        String str = "name: \"A\"\nfriends:\n- name: \"B\"\n  friends: []\n- name: \"C\"\n  friends ";
         Serialization.deserialize(str, Serialization.Format.YAML, KLASS, RESOLVER);
     }
 
