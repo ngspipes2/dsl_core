@@ -8,15 +8,15 @@ import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 
 import java.util.Collection;
 
-public class JacksonToolDescriptor implements IToolDescriptor {
+public class FileBasedToolDescriptor implements IToolDescriptor {
 
     private IToolDescriptor descriptorSource;
 
-    public JacksonToolDescriptor(IToolDescriptor descriptor) {
+    public FileBasedToolDescriptor(IToolDescriptor descriptor) {
         descriptorSource = descriptor;
     }
 
-    public JacksonToolDescriptor() { this(new ToolDescriptor()); }
+    public FileBasedToolDescriptor() { this(new ToolDescriptor()); }
 
     @Override
     public String getName() { return descriptorSource.getName(); }

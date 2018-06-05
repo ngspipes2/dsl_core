@@ -7,16 +7,16 @@ import pt.isel.ngspipes.tool_descriptor.interfaces.IParameterDescriptor;
 
 import java.util.Collection;
 
-public class JacksonParameterDescriptor implements IParameterDescriptor {
+public class FileBasedParameterDescriptor implements IParameterDescriptor {
 
     private IParameterDescriptor descriptorSource;
 
 
-    public JacksonParameterDescriptor(IParameterDescriptor descriptorSource) {
+    public FileBasedParameterDescriptor(IParameterDescriptor descriptorSource) {
         this.descriptorSource = descriptorSource;
     }
 
-    public JacksonParameterDescriptor() { this(new ParameterDescriptor()); }
+    public FileBasedParameterDescriptor() { this(new ParameterDescriptor()); }
 
 
     @Override

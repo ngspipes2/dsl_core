@@ -1,8 +1,8 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
 
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonCommandDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonParameterDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedCommandDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedParameterDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.ICommandDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IParameterDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
@@ -12,44 +12,44 @@ import java.util.LinkedList;
 
 public class JacksonEntityService {
 
-    public static JacksonToolDescriptor transformToJacksonToolDescriptor(IToolDescriptor tool) {
-        Collection<ICommandDescriptor> commands = transformToJacksonCommandsDescriptors(tool.getCommands());
+    public static FileBasedToolDescriptor transformToFileBasedToolDescriptor(IToolDescriptor tool) {
+        Collection<ICommandDescriptor> commands = transformToFileBasedCommandsDescriptors(tool.getCommands());
         tool.setCommands(commands);
-        return new JacksonToolDescriptor(tool);
+        return new FileBasedToolDescriptor(tool);
     }
 
-    public static Collection<ICommandDescriptor> transformToJacksonCommandsDescriptors(Collection<ICommandDescriptor> commands) {
+    public static Collection<ICommandDescriptor> transformToFileBasedCommandsDescriptors(Collection<ICommandDescriptor> commands) {
         Collection<ICommandDescriptor> jacksonCommands = new LinkedList<>();
 
         if (commands == null)
             return jacksonCommands;
 
         for (ICommandDescriptor command : commands)
-            jacksonCommands.add(transformToJacksonCommandDescriptor(command));
+            jacksonCommands.add(transformToFileBasedCommandDescriptor(command));
 
         return jacksonCommands;
     }
 
-    public static JacksonCommandDescriptor transformToJacksonCommandDescriptor(ICommandDescriptor command) {
-        Collection<IParameterDescriptor> parameters = transformToJacksonParametersDescriptors(command.getParameters());
+    public static FileBasedCommandDescriptor transformToFileBasedCommandDescriptor(ICommandDescriptor command) {
+        Collection<IParameterDescriptor> parameters = transformToFileBasedParametersDescriptors(command.getParameters());
         command.setParameters(parameters);
-        return new JacksonCommandDescriptor(command);
+        return new FileBasedCommandDescriptor(command);
     }
 
-    public static Collection<IParameterDescriptor> transformToJacksonParametersDescriptors(Collection<IParameterDescriptor> parameters) {
+    public static Collection<IParameterDescriptor> transformToFileBasedParametersDescriptors(Collection<IParameterDescriptor> parameters) {
         Collection<IParameterDescriptor> jacksonParameters = new LinkedList<>();
 
         if (parameters == null)
             return jacksonParameters;
 
         for (IParameterDescriptor parameter : parameters)
-            jacksonParameters.add(transformToJacksonParameterDescriptor(parameter));
+            jacksonParameters.add(transformToFileBasedParameterDescriptor(parameter));
 
         return jacksonParameters;
     }
 
-    public static JacksonParameterDescriptor transformToJacksonParameterDescriptor(IParameterDescriptor parameter) {
-        return new JacksonParameterDescriptor(parameter);
+    public static FileBasedParameterDescriptor transformToFileBasedParameterDescriptor(IParameterDescriptor parameter) {
+        return new FileBasedParameterDescriptor(parameter);
     }
 
 }

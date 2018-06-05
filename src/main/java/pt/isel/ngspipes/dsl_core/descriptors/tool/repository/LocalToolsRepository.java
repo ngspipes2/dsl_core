@@ -95,7 +95,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
     @Override
     public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
-        tool = JacksonEntityService.transformToJacksonToolDescriptor(tool);
+        tool = JacksonEntityService.transformToFileBasedToolDescriptor(tool);
         String toolPath = location + SEPARATOR + tool.getName();
 
         if(IOUtils.existDirectory(toolPath))

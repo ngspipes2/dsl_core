@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonCommandDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonParameterDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.JacksonToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedCommandDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedParameterDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedToolDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.OutputDescriptor;
@@ -103,9 +103,9 @@ public class ToolsDescriptorsUtils {
     private static SimpleAbstractTypeResolver getToolResolver() {
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
 
-        resolver.addMapping(IToolDescriptor.class, JacksonToolDescriptor.class);
-        resolver.addMapping(ICommandDescriptor.class, JacksonCommandDescriptor.class);
-        resolver.addMapping(IParameterDescriptor.class, JacksonParameterDescriptor.class);
+        resolver.addMapping(IToolDescriptor.class, FileBasedToolDescriptor.class);
+        resolver.addMapping(ICommandDescriptor.class, FileBasedCommandDescriptor.class);
+        resolver.addMapping(IParameterDescriptor.class, FileBasedParameterDescriptor.class);
         resolver.addMapping(IOutputDescriptor.class, OutputDescriptor.class);
         resolver.addMapping(IExecutionContextDescriptor.class, ExecutionContextDescriptor.class);
 

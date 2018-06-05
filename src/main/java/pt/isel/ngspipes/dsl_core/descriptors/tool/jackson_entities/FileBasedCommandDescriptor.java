@@ -9,15 +9,15 @@ import pt.isel.ngspipes.tool_descriptor.interfaces.IParameterDescriptor;
 
 import java.util.Collection;
 
-public class JacksonCommandDescriptor implements ICommandDescriptor {
+public class FileBasedCommandDescriptor implements ICommandDescriptor {
 
     private ICommandDescriptor descriptorSource;
 
-    public JacksonCommandDescriptor(ICommandDescriptor descriptorSource) {
+    public FileBasedCommandDescriptor(ICommandDescriptor descriptorSource) {
         this.descriptorSource = descriptorSource;
     }
 
-    public JacksonCommandDescriptor() { this(new CommandDescriptor()); }
+    public FileBasedCommandDescriptor() { this(new CommandDescriptor()); }
 
     @Override
     public String getName() { return descriptorSource.getName(); }
