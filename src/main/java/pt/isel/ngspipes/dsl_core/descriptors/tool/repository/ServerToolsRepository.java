@@ -12,16 +12,39 @@ import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.*;
 import pt.isel.ngspipes.tool_descriptor.interfaces.*;
 import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
+import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ServerToolsRepository extends ToolsRepository {
+
+    // IMPLEMENTATION OF IToolRepositoryFactory
+    public static IToolsRepository create(String location, Map<String, Object> config) throws ToolsRepositoryException {
+        if(!verifyLocation(location))
+            return null;
+
+        return new ServerToolsRepository(location, config);
+    }
+
+    private static boolean verifyLocation(String location) throws ToolsRepositoryException {
+        try {
+            return HttpUtils.canConnect(location + "/tools");
+        } catch (IOException e) {
+            if(e instanceof MalformedURLException)
+                return false;
+
+            throw new ToolsRepositoryException("Could not verify location:" + location, e);
+        }
+    }
+
+
 
     private Serialization.Format serializationFormat;
     private SimpleAbstractTypeResolver resolver;

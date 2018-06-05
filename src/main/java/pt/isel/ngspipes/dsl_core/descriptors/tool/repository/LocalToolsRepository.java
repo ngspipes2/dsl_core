@@ -6,7 +6,6 @@ import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.JacksonEntityService;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
-import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
@@ -88,7 +87,7 @@ public class LocalToolsRepository extends ToolsRepository {
         String toolPath = location + SEPARATOR + tool.getName();
 
         if(!IOUtils.existDirectory(toolPath))
-            throw new ToolsRepositoryException("There is already a tool with name: " + tool.getName());
+            throw new ToolsRepositoryException("There is no tool with name: " + tool.getName());
 
         delete(tool.getName());
         insert(tool);
@@ -130,7 +129,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
     private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException, ToolsRepositoryException {
         String content = IOUtils.read(toolDescriptorPath);
-        ToolDescriptor toolDescriptor = (ToolDescriptor) ToolsDescriptorsUtils.createToolDescriptor(content, type);
+        IToolDescriptor toolDescriptor = ToolsDescriptorsUtils.createToolDescriptor(content, type);
         Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolPath);
         toolDescriptor.setExecutionContexts(executionContextDescriptors);
         toolDescriptor.setLogo(getLogo(toolPath));
@@ -160,7 +159,7 @@ public class LocalToolsRepository extends ToolsRepository {
                 return descriptorName;
             }
         }
-        throw new ToolsRepositoryException("Couldn't find descriptor for tool");
+        throw new ToolsRepositoryException("Couldn't find descriptor for tool!");
     }
 
     private byte[] getLogo(String toolPath) throws IOException {

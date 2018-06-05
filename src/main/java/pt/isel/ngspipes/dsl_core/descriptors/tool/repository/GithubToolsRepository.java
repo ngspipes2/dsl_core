@@ -11,6 +11,7 @@ import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
@@ -35,7 +36,10 @@ public class  GithubToolsRepository extends ToolsRepository {
             if(GithubAPI.isGithubUri(location))
                 return GithubAPI.existsRepository(location);
         } catch (IOException e) {
-            throw new ToolsRepositoryException("Could not verify location:" + location, e);
+            if(e instanceof MalformedURLException)
+                return false;
+
+           throw new ToolsRepositoryException("Could not verify location:" + location, e);
         }
 
         return false;
