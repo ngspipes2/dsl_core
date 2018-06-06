@@ -1,11 +1,14 @@
 package tools;
 
+import pt.isel.ngspipes.tool_descriptor.implementations.CommandDescriptor;
+import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,14 @@ public class ToolsRepositoryTestUtils {
 
         IToolDescriptor tool = new ToolDescriptor();
         tool.setName(toolName);
+
+        tool.setCommands(new LinkedList<>());
+        tool.getCommands().add(new CommandDescriptor());
+        tool.getCommands().stream().findFirst().get().setName("Dummy Command");
+
+        tool.setExecutionContexts(new LinkedList<>());
+        tool.getExecutionContexts().add(new ExecutionContextDescriptor());
+        tool.getExecutionContexts().stream().findFirst().get().setName("Dummy Execution Context");
 
         repository.insert(tool);
 
@@ -35,6 +46,10 @@ public class ToolsRepositoryTestUtils {
 
             assertNotNull(tool);
             assertEquals(toolName, tool.getName());
+            assertEquals(1, tool.getCommands().size());
+            assertEquals("Dummy Command", tool.getCommands().stream().findFirst().get().getName());
+            assertEquals(1, tool.getExecutionContexts().size());
+            assertEquals("Dummy Execution Context", tool.getExecutionContexts().stream().findFirst().get().getName());
         } finally {
             if(toolName != null)
                 repository.delete(toolName);
@@ -81,6 +96,8 @@ public class ToolsRepositoryTestUtils {
         IToolDescriptor tool = new ToolDescriptor();
         tool.setName(toolName);
         tool.setAuthor(author);
+        tool.setCommands(new LinkedList<>());
+        tool.setExecutionContexts(new LinkedList<>());
 
         repository.update(tool);
 
@@ -89,6 +106,8 @@ public class ToolsRepositoryTestUtils {
         assertNotNull(tool);
         assertEquals(toolName, tool.getName());
         assertEquals(author, tool.getAuthor());
+        assertEquals(0, tool.getCommands().size());
+        assertEquals(0, tool.getExecutionContexts().size());
     }
 
 
