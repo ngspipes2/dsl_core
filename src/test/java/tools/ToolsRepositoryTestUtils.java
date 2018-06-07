@@ -3,6 +3,8 @@ package tools;
 import pt.isel.ngspipes.tool_descriptor.implementations.CommandDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.ICommandDescriptor;
+import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
@@ -21,18 +23,34 @@ public class ToolsRepositoryTestUtils {
 
         IToolDescriptor tool = new ToolDescriptor();
         tool.setName(toolName);
-
-        tool.setCommands(new LinkedList<>());
-        tool.getCommands().add(new CommandDescriptor());
-        tool.getCommands().stream().findFirst().get().setName("Dummy Command");
-
-        tool.setExecutionContexts(new LinkedList<>());
-        tool.getExecutionContexts().add(new ExecutionContextDescriptor());
-        tool.getExecutionContexts().stream().findFirst().get().setName("Dummy Execution Context");
+        tool.setCommands(getDummyCommands());
+        tool.setExecutionContexts(getDummyExecutionContexts());
 
         repository.insert(tool);
 
         return toolName;
+    }
+
+    public static Collection<ICommandDescriptor> getDummyCommands() {
+        Collection<ICommandDescriptor> commands = new LinkedList<>();
+
+        ICommandDescriptor command = new CommandDescriptor();
+        command.setName("Dummy Command");
+
+        commands.add(command);
+
+        return commands;
+    }
+
+    public static Collection<IExecutionContextDescriptor> getDummyExecutionContexts() {
+        Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
+
+        IExecutionContextDescriptor context = new ExecutionContextDescriptor();
+        context.setName("Dummy Execution Context");
+
+        contexts.add(context);
+
+        return contexts;
     }
 
 

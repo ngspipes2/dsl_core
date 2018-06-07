@@ -18,6 +18,7 @@ public class ServerRepositoryTest {
     private static ConfigurableApplicationContext emptyServerContext;
 
 
+
     @BeforeClass
     public static void init() {
         notEmptyServerContext = SpringApplication.run(NotToolsRepositoryServer.class, "--server.port=4321");
@@ -32,6 +33,7 @@ public class ServerRepositoryTest {
         SpringApplication.exit(notEmptyServerContext);
         SpringApplication.exit(emptyServerContext);
     }
+
 
 
     @Test
