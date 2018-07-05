@@ -10,16 +10,19 @@ import java.util.Map;
 
 public class CachePipelinesRepository implements IPipelinesRepository {
 
-
     private final IPipelinesRepository source;
     private final Map<String, IPipelineDescriptor> cache;
     private final Object lock;
+
+
 
     public CachePipelinesRepository(IPipelinesRepository source) {
         this.source = source;
         this.cache = new HashMap<>();
         this.lock = new Object();
     }
+
+
 
     @Override
     public String getLocation() throws PipelinesRepositoryException {
@@ -80,4 +83,5 @@ public class CachePipelinesRepository implements IPipelinesRepository {
             cache.remove(pipelineName);
         }
     }
+
 }
