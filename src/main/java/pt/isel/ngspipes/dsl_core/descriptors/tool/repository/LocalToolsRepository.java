@@ -12,6 +12,7 @@ import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -89,8 +90,19 @@ public class LocalToolsRepository extends ToolsRepository {
         if(!IOUtils.existDirectory(toolPath))
             throw new ToolsRepositoryException("There is no tool with name: " + tool.getName());
 
-        delete(tool.getName());
-        insert(tool);
+        String descriptorName = getDescriptorName(toolPath);
+        String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
+        String type = IOUtils.getExtensionFromFilePath(descriptorName);
+
+        new File(toolPath + "/" + DESCRIPTOR_FILE_NAME).delete();
+        new File(toolPath + "/" + LOGO_FILE_NAME).delete();
+        IOUtils.deleteFolder(toolPath + EXECUTION_CONTEXTS_DIRECTORY);
+
+        try {
+            writeTool(tool, toolPath, toolDescriptorPath, getFormat(type));
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error writing " + tool.getName() + " tool descriptor", e);
+        }
     }
 
     @Override
@@ -104,9 +116,9 @@ public class LocalToolsRepository extends ToolsRepository {
         IOUtils.createFolder(toolPath);
         String toolDescriptorPath = toolPath + SEPARATOR + DESCRIPTOR_FILE_NAME + "." + getExtension();
         try {
-            insertTool(tool, toolPath, toolDescriptorPath);
+            writeTool(tool, toolPath, toolDescriptorPath, serializationFormat);
         } catch (IOException e) {
-            throw new ToolsRepositoryException("Error updating " + tool.getName() + " tool descriptor", e);
+            throw new ToolsRepositoryException("Error writing " + tool.getName() + " tool descriptor", e);
         }
     }
 
@@ -116,8 +128,8 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
 
-    private void insertTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath) throws IOException, ToolsRepositoryException {
-        String descriptorAsString = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, serializationFormat);
+    private void writeTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath, Serialization.Format format) throws IOException, ToolsRepositoryException {
+        String descriptorAsString = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, format);
         IOUtils.write(descriptorAsString, toolDescriptorPath);
 
         Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
@@ -192,6 +204,14 @@ public class LocalToolsRepository extends ToolsRepository {
         try {
             return Serialization.getFileExtensionFromFormat(serializationFormat);
         } catch (DSLCoreException e) {
+            throw new ToolsRepositoryException(e.getMessage(), e);
+        }
+    }
+
+    private Serialization.Format getFormat(String fileExtension) throws ToolsRepositoryException {
+        try {
+            return Serialization.getFormatFromFileExtension(fileExtension);
+        } catch (DSLCoreException e ) {
             throw new ToolsRepositoryException(e.getMessage(), e);
         }
     }
