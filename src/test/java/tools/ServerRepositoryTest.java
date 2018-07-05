@@ -7,7 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.ServerToolsRepository;
 import tools.servers.EmptyToolsRepositoryServer;
-import tools.servers.NotToolsRepositoryServer;
+import tools.servers.NotEmptyToolsRepositoryServer;
 import utils.ToolsRepositoryException;
 
 public class ServerRepositoryTest {
@@ -21,7 +21,7 @@ public class ServerRepositoryTest {
 
     @BeforeClass
     public static void init() {
-        notEmptyServerContext = SpringApplication.run(NotToolsRepositoryServer.class, "--server.port=4321");
+        notEmptyServerContext = SpringApplication.run(NotEmptyToolsRepositoryServer.class, "--server.port=4321");
         emptyServerContext = SpringApplication.run(EmptyToolsRepositoryServer.class, "--server.port=4322");
 
         location = "http://localhost:4321/notempty";

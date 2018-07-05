@@ -16,6 +16,7 @@ import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.Collection;
@@ -261,10 +262,12 @@ public class ServerToolsRepository extends ToolsRepository {
 
     private String getErrorMessage(HttpURLConnection connection) {
         try{
-            return IOUtils.toString(connection.getErrorStream());
-        } catch (IOException e) {
-            return "";
-        }
+            InputStream stream = connection.getErrorStream();
+            if(stream != null)
+                return IOUtils.toString(stream);
+        } catch (IOException e) { }
+
+        return "";
     }
 
 }

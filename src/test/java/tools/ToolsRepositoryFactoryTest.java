@@ -9,7 +9,7 @@ import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.LocalToolsRepositor
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.MemoryToolsRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.ServerToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
-import tools.servers.NotToolsRepositoryServer;
+import tools.servers.NotEmptyToolsRepositoryServer;
 import utils.ToolsRepositoryException;
 
 import static org.junit.Assert.*;
@@ -62,7 +62,7 @@ public class ToolsRepositoryFactoryTest {
         ConfigurableApplicationContext server = null;
 
         try {
-            server = SpringApplication.run(NotToolsRepositoryServer.class, "--server.port=4321");
+            server = SpringApplication.run(NotEmptyToolsRepositoryServer.class, "--server.port=4321");
 
             IToolsRepository repository = ToolsRepositoryFactory.create(location, null);
 

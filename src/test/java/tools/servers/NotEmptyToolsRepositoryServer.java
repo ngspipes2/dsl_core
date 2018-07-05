@@ -12,13 +12,13 @@ import java.util.Map;
 @CrossOrigin
 @RestController
 @SpringBootApplication
-public class NotToolsRepositoryServer {
+public class NotEmptyToolsRepositoryServer {
 
     private Map<String, IToolDescriptor> toolsByName;
 
 
 
-    public NotToolsRepositoryServer() {
+    public NotEmptyToolsRepositoryServer() {
         toolsByName = new HashMap<>();
 
         IToolDescriptor tool = new ToolDescriptor();
@@ -58,6 +58,7 @@ public class NotToolsRepositoryServer {
     public void update(@RequestBody ToolDescriptor tool) throws Exception {
         if(!toolsByName.containsKey(tool.getName()))
             throw new Exception("There is not tool with name:" + tool.getName());
+
         toolsByName.put(tool.getName(), tool);
     }
 
