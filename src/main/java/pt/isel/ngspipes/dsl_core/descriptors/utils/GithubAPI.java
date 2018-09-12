@@ -19,7 +19,7 @@ public class GithubAPI {
         if(password != null)
             return GitHub.connectUsingPassword(email != null ? email : userName, password);
 
-        return GitHub.connect();
+        return GitHub.connectAnonymously();
     }
 
     public static GHRepository getGHRepository(GitHub github, String repositoryName) throws IOException {
@@ -32,6 +32,9 @@ public class GithubAPI {
 
     public static boolean existsRepository(GitHub github, String repositoryName) throws IOException {
         try {
+            if(!repositoryName.contains("/"))
+                return false;
+
             github.getRepository(repositoryName);
             return true;
         } catch (FileNotFoundException e) {

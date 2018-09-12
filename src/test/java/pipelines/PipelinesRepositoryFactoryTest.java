@@ -18,7 +18,7 @@ public class PipelinesRepositoryFactoryTest {
 
     @Test
     public void getExistentGithubRepositoryTest() throws PipelinesRepositoryException {
-        String location = "https://github.com/ngspipes2/pipelines_support";
+        String location = "ngspipes2/pipelines_support";
 
         IPipelinesRepository repository = PipelinesRepositoryFactory.create(location, null);
 
@@ -29,7 +29,7 @@ public class PipelinesRepositoryFactoryTest {
 
     @Test(expected = PipelinesRepositoryException.class)
     public void getNonExistentGithubRepositoryTest() throws PipelinesRepositoryException {
-        String location = "https://github.com/ngspipes2/non_existest_repository";
+        String location = "ngspipes2/non_existest_repository";
 
         IPipelinesRepository repository = PipelinesRepositoryFactory.create(location, null);
 

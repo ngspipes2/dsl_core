@@ -14,6 +14,7 @@ import utils.ToolsRepositoryException;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -33,6 +34,9 @@ public class  GithubToolsRepository extends ToolsRepository {
 
     // IMPLEMENTATION OF IToolRepositoryFactory
     public static IToolsRepository create(String location, Map<String, Object> config) throws ToolsRepositoryException {
+        if(config == null)
+           config = new HashMap<>();
+
         if(!verifyLocation(location, config))
             return null;
 

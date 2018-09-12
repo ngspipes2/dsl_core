@@ -18,7 +18,7 @@ public class ToolsRepositoryFactoryTest {
 
     @Test
     public void getExistentGithubRepositoryTest() throws ToolsRepositoryException {
-        String location = "https://github.com/ngspipes2/tools_support";
+        String location = "ngspipes2/tools_support";
 
         IToolsRepository repository = ToolsRepositoryFactory.create(location, null);
 
@@ -29,7 +29,7 @@ public class ToolsRepositoryFactoryTest {
 
     @Test(expected = ToolsRepositoryException.class)
     public void getNonExistentGithubRepositoryTest() throws ToolsRepositoryException {
-        String location = "https://github.com/ngspipes2/non_existest_repository";
+        String location = "ngspipes2/non_existest_repository";
 
         IToolsRepository repository = ToolsRepositoryFactory.create(location, null);
 

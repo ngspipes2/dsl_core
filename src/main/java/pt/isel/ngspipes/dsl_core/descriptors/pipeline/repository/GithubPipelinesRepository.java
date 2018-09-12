@@ -14,6 +14,7 @@ import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -32,6 +33,9 @@ public class GithubPipelinesRepository extends PipelinesRepository {
 
     // IMPLEMENTATION OF IPipelinesRepositoryFactory
     public static IPipelinesRepository create(String location, Map<String, Object> config) throws PipelinesRepositoryException {
+        if(config == null)
+            config = new HashMap<>();
+
         if(!verifyLocation(location, config))
             return null;
 
