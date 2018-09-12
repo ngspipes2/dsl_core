@@ -1,114 +1,87 @@
 package pt.isel.ngspipes.dsl_core.descriptors.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
-import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
+import org.kohsuke.github.GHContent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.LinkedList;
 
 public class GithubAPI {
 
-    public static boolean isGithubUri(String uri) {
-        return uri.startsWith(Configuration.GITHUB_BASE_URI);
+    public static GitHub getGitHub(String userName, String password, String email, String accessToken) throws IOException {
+        if(accessToken != null)
+            return GitHub.connectUsingOAuth(accessToken);
+
+        if(password != null)
+            return GitHub.connectUsingPassword(email != null ? email : userName, password);
+
+        return GitHub.connect();
     }
 
-    public static boolean existsRepository(String repositoryUri) throws IOException {
-        String uri = getApiUri(repositoryUri, null);
-        return HttpUtils.canConnect(uri);
-    }
-
-
-    public static String getFileContent(String repositoryUri, String path) throws IOException {
-        String uri = getRawUri(repositoryUri, path);
-        return HttpUtils.get(uri);
-    }
-
-    public static byte[] getFileBytes(String repositoryUri, String path) throws IOException {
-        String uri = getRawUri(repositoryUri, path);
-        return HttpUtils.getBytes(uri);
+    public static GHRepository getGHRepository(GitHub github, String repositoryName) throws IOException {
+        if(existsRepository(github, repositoryName))
+            return github.getRepository(repositoryName);
+        else
+            return null;
     }
 
 
-    public static Collection<String> getFoldersNames(String repositoryUri) throws IOException {
-        return getFoldersNames(repositoryUri, null);
-    }
-
-    public static Collection<String> getFoldersNames(String repositoryUri, String directory) throws IOException {
-        return getNames(repositoryUri, directory, "dir");
-    }
-
-    public static Collection<String> getFilesNames(String repositoryUri) throws IOException {
-        return getFilesNames(repositoryUri, null);
-    }
-
-    public static Collection<String> getFilesNames(String repositoryUri, String directory) throws IOException {
-        return getNames(repositoryUri, directory, "file");
+    public static boolean existsRepository(GitHub github, String repositoryName) throws IOException {
+        try {
+            github.getRepository(repositoryName);
+            return true;
+        } catch (FileNotFoundException e) {
+            return false;
+        }
     }
 
 
-    private static Collection<String> getNames(String repositoryUri, String directory, String type) throws IOException {
-        String uri = getApiUri(repositoryUri, directory);
+    public static String getFileContent(GHRepository repository, String path) throws IOException {
+        GHContent file = repository.getFileContent(path);
+        return IOUtils.toString(file.read());
+    }
 
-        JsonNode jsonNode = getJsonNodeFrom(uri);
+    public static byte[] getFileBytes(GHRepository repository, String path) throws IOException {
+        GHContent file = repository.getFileContent(path);
+        return IOUtils.toByteArray(file.read());
+    }
 
+
+    public static Collection<String> getFoldersNames(GHRepository repository) throws IOException {
+        return getFoldersNames(repository, "");
+    }
+
+    public static Collection<String> getFoldersNames(GHRepository repository, String directory) throws IOException {
+        return getNames(repository, directory, false);
+    }
+
+    public static Collection<String> getFilesNames(GHRepository repository) throws IOException {
+        return getFilesNames(repository, "");
+    }
+
+    public static Collection<String> getFilesNames(GHRepository repository, String directory) throws IOException {
+        return getNames(repository, directory, true);
+    }
+
+
+    private static Collection<String> getNames(GHRepository repository, String directory, boolean fileNotDirectory) throws IOException {
         Collection<String> names = new LinkedList<>();
 
-        if(jsonNode == null)
-            return names;
-
-        if(jsonNode.isArray()) {
-            String name;
-            for (JsonNode jNode : jsonNode) {
-                if(jNode.get("type").textValue().equals(type)) {
-                    name = jNode.get(Configuration.GITHUB_FILE_AND_DIRECTORY_NAMES_KEY).textValue();
-                    names.add(name);
-                }
-            }
+        try {
+            for(GHContent content : repository.getDirectoryContent(directory))
+                if(fileNotDirectory && content.isFile())
+                    names.add(content.getName());
+                else if(!fileNotDirectory && content.isDirectory())
+                    names.add(content.getName());
+        } catch (FileNotFoundException e) {
+            return new LinkedList<>();
         }
 
         return names;
-    }
-
-    private static JsonNode getJsonNodeFrom(String uri) throws IOException {
-        HttpURLConnection connection = HttpUtils.getGETConnection(uri);
-
-        try {
-            String content = IOUtils.toString(connection.getInputStream());
-            return new ObjectMapper().readTree(content);
-        } catch (IOException e) {
-            int statusCode = connection.getResponseCode();
-
-            if(statusCode == HttpStatus.SC_NO_CONTENT)
-                return null;
-
-            String errorMessage = IOUtils.toString(connection.getErrorStream());
-            if(statusCode == HttpStatus.SC_NOT_FOUND && errorMessage.contains("empty"))
-                return null;
-
-            throw e;
-        }
-    }
-
-    private static String getApiUri(String repositoryUri, String directory) {
-        String uri = repositoryUri.replace(Configuration.GITHUB_BASE_URI, Configuration.GITHUB_API_URI);
-
-        uri += "/contents";
-
-        if(directory != null)
-            uri += "/" + directory;
-
-        return uri;
-    }
-
-    private static String getRawUri(String repositoryUri, String path) {
-        String uri = repositoryUri.replace(Configuration.GITHUB_BASE_URI, Configuration.GITHUB_RAW_URI);
-
-        return uri + "/master/" + path;
     }
 
 }
