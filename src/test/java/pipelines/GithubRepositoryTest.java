@@ -2,6 +2,7 @@ package pipelines;
 
 import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository.GithubPipelinesRepository;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelineSerialization;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
@@ -26,6 +27,63 @@ public class GithubRepositoryTest {
         return config;
     }
 
+
+
+    @Test
+    public void insertNonExistentPipelineTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig(), PipelineSerialization.Format.YAML);
+        PipelinesRepositoryTestUtils.insertNonExistentPipelineTest(repository);
+    }
+
+    @Test(expected = PipelinesRepositoryException.class)
+    public void insertExistentPipelineTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.insertExistentPipelineTest(repository,"FirstStudyCase");
+    }
+
+
+    @Test
+    public void deleteNonExistentPipelineTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.deleteNonExistentPipelineTest(repository);
+    }
+
+    @Test
+    public void deleteExistentPipelineTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+
+        String pipelineName = null;
+
+        try {
+            pipelineName = PipelinesRepositoryTestUtils.insertDummyPipeline(repository);
+            PipelinesRepositoryTestUtils.deleteExistentPipelineTest(repository, pipelineName);
+        } finally {
+            if(pipelineName != null)
+                repository.delete(pipelineName);
+        }
+    }
+
+
+    @Test(expected = PipelinesRepositoryException.class)
+    public void updateNonExistentPipelineTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.updateNonExistentPipelineTest(repository);
+    }
+
+    @Test
+    public void updateExistentPipelineTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+
+        String pipelineName = null;
+
+        try {
+            pipelineName = PipelinesRepositoryTestUtils.insertDummyPipeline(repository);
+            PipelinesRepositoryTestUtils.updateExistentPipelineTest(repository, pipelineName);
+        } finally {
+            if(pipelineName != null)
+                repository.delete(pipelineName);
+        }
+    }
 
 
     @Test

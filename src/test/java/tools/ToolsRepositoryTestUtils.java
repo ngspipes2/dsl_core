@@ -46,7 +46,7 @@ public class ToolsRepositoryTestUtils {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
 
         IExecutionContextDescriptor context = new ExecutionContextDescriptor();
-        context.setName("Dummy Execution Context");
+        context.setName("Dummy-Execution-Context");
 
         contexts.add(context);
 
@@ -67,7 +67,7 @@ public class ToolsRepositoryTestUtils {
             assertEquals(1, tool.getCommands().size());
             assertEquals("Dummy Command", tool.getCommands().stream().findFirst().get().getName());
             assertEquals(1, tool.getExecutionContexts().size());
-            assertEquals("Dummy Execution Context", tool.getExecutionContexts().stream().findFirst().get().getName());
+            assertEquals("Dummy-Execution-Context", tool.getExecutionContexts().stream().findFirst().get().getName());
         } finally {
             if(toolName != null)
                 repository.delete(toolName);

@@ -28,6 +28,63 @@ public class GitHubRepositoryTest {
 
 
     @Test
+    public void insertNonExistentToolTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+        ToolsRepositoryTestUtils.insertNonExistentToolTest(repository);
+    }
+
+    @Test(expected = ToolsRepositoryException.class)
+    public void insertExistentToolTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+        ToolsRepositoryTestUtils.insertExistentToolTest(repository,"Blast");
+    }
+
+
+    @Test
+    public void deleteNonExistentToolTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+        ToolsRepositoryTestUtils.deleteNonExistentToolTest(repository);
+    }
+
+    @Test
+    public void deleteExistentToolTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+
+        String toolName = null;
+
+        try {
+            toolName = ToolsRepositoryTestUtils.insertDummyTool(repository);
+            ToolsRepositoryTestUtils.deleteExistentToolTest(repository, toolName);
+        } finally {
+            if(toolName != null)
+                repository.delete(toolName);
+        }
+    }
+
+
+    @Test(expected = ToolsRepositoryException.class)
+    public void updateNonExistentToolTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+        ToolsRepositoryTestUtils.updateNonExistentToolTest(repository);
+    }
+
+    @Test
+    public void updateExistentToolTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+
+        String toolName = null;
+
+        try {
+            toolName = ToolsRepositoryTestUtils.insertDummyTool(repository);
+            ToolsRepositoryTestUtils.updateExistentToolTest(repository, toolName);
+        } finally {
+            if(toolName != null)
+                repository.delete(toolName);
+        }
+    }
+
+
+    @Test
     public void getNonExistentToolTest() throws ToolsRepositoryException {
         GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
         ToolsRepositoryTestUtils.getNonExistentToolTest(repository);
