@@ -12,7 +12,6 @@ import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -36,6 +35,53 @@ public class LocalPipelinesRepository extends PipelinesRepository {
 
     private static boolean verifyLocation(String location) {
         return IOUtils.existDirectory(location);
+    }
+
+
+
+    private class PipelineInfo {
+
+        public String pipelineName;
+        public String pipelineDirectory;
+        public boolean existsPipeline;
+
+        public String pipelineDescriptorName;
+        public String pipelineDescriptorDirectory;
+        public String pipelineDescriptorPath;
+        public boolean existsPipelineDescriptor;
+
+        public String pipelineLogoName;
+        public String pipelineLogoDirectory;
+        public String pipelineLogoPath;
+        public boolean existsPipelineLogo;
+
+        public PipelineSerialization.Format serializationFormat;
+
+
+
+        public PipelineInfo( ) { }
+
+        public PipelineInfo(    String pipelineName, String pipelineDirectory, boolean existsPipeline,
+                                String pipelineDescriptorName, String pipelineDescriptorDirectory, String pipelineDescriptorPath, boolean existsPipelineDescriptor,
+                                String pipelineLogoName, String pipelineLogoDirectory, String pipelineLogoPath, boolean existsPipelineLogo,
+                                PipelineSerialization.Format serializationFormat) {
+            this.pipelineName = pipelineName;
+            this.pipelineDirectory = pipelineDirectory;
+            this.existsPipeline = existsPipeline;
+
+            this.pipelineDescriptorName = pipelineDescriptorName;
+            this.pipelineDescriptorDirectory = pipelineDescriptorDirectory;
+            this.pipelineDescriptorPath = pipelineDescriptorPath;
+            this.existsPipelineDescriptor = existsPipelineDescriptor;
+
+            this.pipelineLogoName = pipelineLogoName;
+            this.pipelineLogoDirectory = pipelineLogoDirectory;
+            this.pipelineLogoPath = pipelineLogoPath;
+            this.existsPipelineLogo = existsPipelineLogo;
+
+            this.serializationFormat = serializationFormat;
+        }
+
     }
 
 
@@ -66,127 +112,178 @@ public class LocalPipelinesRepository extends PipelinesRepository {
         return pipelines;
     }
 
+
     @Override
     public IPipelineDescriptor get(String pipelineName) throws PipelinesRepositoryException {
-        String pipelinePath = location + SEPARATOR + pipelineName;
+        PipelineInfo pipelineInfo = createPipelineInfo(pipelineName);
 
-        if(!IOUtils.existDirectory(pipelinePath))
+        if(!pipelineInfo.existsPipeline)
             return null;
 
-        String descriptorName = getDescriptorName(pipelinePath);
-        String pipelineDescriptorPath = pipelinePath + SEPARATOR + descriptorName;
-        String type = IOUtils.getExtensionFromFilePath(descriptorName);
+        return get(pipelineInfo);
+    }
+
+    private IPipelineDescriptor get(PipelineInfo info) throws PipelinesRepositoryException {
         try {
-            return getPipelineDescriptor(pipelineName, pipelinePath, pipelineDescriptorPath, type);
+            IPipelineDescriptor pipelineDescriptor = getPipelineDescriptor(info);
+            pipelineDescriptor.setLogo(getPipelineLogo(info));
+
+            return pipelineDescriptor;
         } catch (IOException e) {
-            throw new PipelinesRepositoryException("Error loading " + pipelineName + " pipeline descriptor", e);
-        } catch (DSLCoreException e) {
-            throw new PipelinesRepositoryException(e.getMessage(), e);
+            throw new PipelinesRepositoryException("Error loading " + info.pipelineLogoName + " pipeline descriptor!", e);
         }
     }
+
+    private IPipelineDescriptor getPipelineDescriptor(PipelineInfo info) throws IOException, PipelinesRepositoryException {
+        String content = IOUtils.read(info.pipelineDescriptorPath);
+
+        IPipelineDescriptor pipelineDescriptor = PipelinesDescriptorUtils.createPipelineDescriptor(content, info.serializationFormat);
+        pipelineDescriptor.setName(info.pipelineName);
+
+        return pipelineDescriptor;
+    }
+
+    private byte[] getPipelineLogo(PipelineInfo info) throws IOException {
+        if(!info.existsPipelineLogo)
+            return null;
+
+        return IOUtils.readBytes(info.pipelineLogoPath);
+    }
+
 
     @Override
     public void update(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
-        String pipelinePath = location + SEPARATOR + pipeline.getName();
+        PipelineInfo pipelineInfo = createPipelineInfo(pipeline.getName());
 
-        if(!IOUtils.existDirectory(pipelinePath))
+        if(!pipelineInfo.existsPipeline)
             throw new PipelinesRepositoryException("There is no pipeline with name: " + pipeline.getName());
 
-        String descriptorName = getDescriptorName(pipelinePath);
-        String pipelineDescriptorPath = pipelinePath + SEPARATOR + descriptorName;
-        String type = IOUtils.getExtensionFromFilePath(descriptorName);
-        PipelineSerialization.Format format = getFormat(type);
-
-        new File(pipelineDescriptorPath + "/" + DESCRIPTOR_FILE_NAME).delete();
-        new File(pipelineDescriptorPath + "/" + LOGO_FILE_NAME).delete();
-
-        try {
-            write(pipeline, pipelinePath, pipelineDescriptorPath, format);
-        } catch (IOException e) {
-            throw new PipelinesRepositoryException("Error writing " +pipeline.getName() + " pipeline descriptor", e);
-        }
+        update(pipelineInfo, pipeline);
     }
 
-    @Override
-    public void insert(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
-        String pipelinePath = location + SEPARATOR + pipeline.getName();
-
-        if(IOUtils.existDirectory(pipelinePath))
-           throw new PipelinesRepositoryException("There is already a pipeline with name: " + pipeline.getName());
-
-        IOUtils.createFolder(pipelinePath);
-        String pipelineDescriptorPath = pipelinePath + SEPARATOR + DESCRIPTOR_FILE_NAME + "." + getExtension();
+    private void update(PipelineInfo info, IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         try {
-            write(pipeline, pipelinePath, pipelineDescriptorPath, serializationFormat);
+            updatePipelineDescriptor(info, pipeline);
+            updatePipelineLogo(info, pipeline);
         } catch (IOException e) {
             throw new PipelinesRepositoryException("Error writing " + pipeline.getName() + " pipeline descriptor", e);
         }
     }
 
-    @Override
-    public void delete(String pipelineName) {
-        IOUtils.deleteFolder(location + SEPARATOR + pipelineName);
-    }
-
-
-    private void write(IPipelineDescriptor pipeline, String pipelinePath, String pipelineDescriptorPath, PipelineSerialization.Format format) throws IOException, PipelinesRepositoryException {
+    private void updatePipelineDescriptor(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException, PipelinesRepositoryException {
         FileBasedPipelineDescriptor fileBasedPipeline = JacksonEntityService.transformToFileBasedPipelineDescriptor(pipeline);
 
-        String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, format);
-        IOUtils.write(content, pipelineDescriptorPath);
+        String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
 
+        IOUtils.write(content, info.pipelineDescriptorPath);
+    }
+
+    private void updatePipelineLogo(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException {
         if(pipeline.getLogo() != null)
-            IOUtils.writeBytes(pipeline.getLogo(), pipelinePath + SEPARATOR + LOGO_FILE_NAME);
+            IOUtils.writeBytes(pipeline.getLogo(), info.pipelineLogoPath);
+        else if(info.existsPipelineLogo)
+            IOUtils.deleteFile(info.pipelineLogoPath);
     }
 
-    private IPipelineDescriptor getPipelineDescriptor(String pipelineName, String pipelinePath, String pipelineDescriptorPath, String type) throws IOException, PipelinesRepositoryException, DSLCoreException {
-        PipelineSerialization.Format format = PipelineSerialization.getFormatFromFileExtension(type);
-        String content = IOUtils.read(pipelineDescriptorPath);
 
-        IPipelineDescriptor pipelineDescriptor = PipelinesDescriptorUtils.createPipelineDescriptor(content, format);
+    @Override
+    public void insert(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
+        PipelineInfo pipelineInfo = createPipelineInfo(pipeline.getName());
 
-        pipelineDescriptor.setLogo(getLogo(pipelinePath));
-        pipelineDescriptor.setName(pipelineName);
+        if(pipelineInfo.existsPipeline)
+            throw new PipelinesRepositoryException("There is already a pipeline with name: " + pipeline.getName());
 
-        return pipelineDescriptor;
+        insert(pipelineInfo, pipeline);
     }
 
-    private String getDescriptorName(String pipelinePath) throws PipelinesRepositoryException {
-        String descriptorName;
-        Collection<String> names = IOUtils.getDirectoryFilesName(pipelinePath);
-        for (String currName: names) {
-            descriptorName = currName;
-            currName = currName.substring(0, currName.indexOf("."));
-            if(currName.equals(DESCRIPTOR_FILE_NAME)) {
-                return descriptorName;
-            }
-        }
-        throw new PipelinesRepositoryException("Couldn't find descriptor for pipeline!");
-    }
-
-    private byte[] getLogo(String pipelinePath) throws IOException {
-        String logoPath = pipelinePath + SEPARATOR + LOGO_FILE_NAME;
-
-        if(IOUtils.existFile(logoPath))
-            return IOUtils.readBytes(logoPath);
-
-        return null;
-    }
-
-    private String getExtension() throws PipelinesRepositoryException {
+    private void insert(PipelineInfo info, IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         try {
-            return PipelineSerialization.getFileExtensionFromFormat(serializationFormat);
-        } catch (DSLCoreException e ) {
-            throw new PipelinesRepositoryException(e.getMessage(), e);
+            IOUtils.createFolder(info.pipelineDirectory);
+            insertPipelineDescriptor(info, pipeline);
+            insertPipelineLogo(info, pipeline);
+        } catch (IOException e) {
+            throw new PipelinesRepositoryException("Error writing " + pipeline.getName() + " pipeline descriptor", e);
         }
     }
 
-    private PipelineSerialization.Format getFormat(String fileExtension) throws PipelinesRepositoryException {
+    private void insertPipelineDescriptor(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException, PipelinesRepositoryException {
+        FileBasedPipelineDescriptor fileBasedPipeline = JacksonEntityService.transformToFileBasedPipelineDescriptor(pipeline);
+
+        String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
+
+        IOUtils.write(content, info.pipelineDescriptorPath);
+    }
+
+    private void insertPipelineLogo(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException {
+        if(pipeline.getLogo() != null)
+            IOUtils.writeBytes(pipeline.getLogo(), info.pipelineLogoPath);
+    }
+
+
+    @Override
+    public void delete(String pipelineName) throws PipelinesRepositoryException {
+        PipelineInfo pipelineInfo = createPipelineInfo(pipelineName);
+
+        if(!pipelineInfo.existsPipeline)
+            return;
+
+        delete(pipelineInfo);
+    }
+
+    private void delete(PipelineInfo info) throws PipelinesRepositoryException {
         try {
-            return PipelineSerialization.getFormatFromFileExtension(fileExtension);
-        } catch (DSLCoreException e ) {
-            throw new PipelinesRepositoryException(e.getMessage(), e);
+            deletePipelineDescriptor(info);
+            deletePipelineLogo(info);
+            IOUtils.deleteFile(info.pipelineDirectory);
+        } catch (IOException e) {
+            throw new PipelinesRepositoryException("Could not delete folder " + info.pipelineDirectory+"!", e);
         }
+    }
+
+    private void deletePipelineDescriptor(PipelineInfo info) throws IOException {
+        IOUtils.deleteFile(info.pipelineDescriptorPath);
+    }
+
+    private void deletePipelineLogo(PipelineInfo info) throws IOException {
+        if(info.existsPipelineLogo)
+            IOUtils.deleteFile(info.pipelineLogoPath);
+    }
+
+
+    private PipelineInfo createPipelineInfo(String pipelineName) throws PipelinesRepositoryException {
+        try {
+            PipelineInfo info = new PipelineInfo();
+
+            info.pipelineName = pipelineName;
+            info.pipelineDirectory = super.location + SEPARATOR + pipelineName;
+            info.existsPipeline = IOUtils.existDirectory(info.pipelineDirectory);
+
+            info.pipelineDescriptorName = getDescriptorName(info.pipelineDirectory);
+            info.pipelineDescriptorDirectory = info.pipelineDirectory;
+            info.pipelineDescriptorPath = info.pipelineDescriptorDirectory + SEPARATOR + info.pipelineDescriptorName;
+            info.existsPipelineDescriptor = IOUtils.existFile(info.pipelineDescriptorPath);
+
+            info.pipelineLogoName = LOGO_FILE_NAME;
+            info.pipelineLogoDirectory = info.pipelineDirectory;
+            info.pipelineLogoPath = info.pipelineLogoDirectory + SEPARATOR + LOGO_FILE_NAME;
+            info.existsPipelineLogo = IOUtils.existFile(info.pipelineLogoPath);
+
+            info.serializationFormat = PipelineSerialization.getFormatFromFileExtension(IOUtils.getExtensionFromFilePath(info.pipelineDescriptorPath));
+
+            return info;
+        } catch (DSLCoreException | IOException e) {
+            throw new PipelinesRepositoryException("Error checking info for pipeline " + pipelineName + "!", e);
+        }
+    }
+
+    private String getDescriptorName(String pipelineDirectory) throws IOException, DSLCoreException {
+        for(String file : IOUtils.getDirectoryFilesName(pipelineDirectory)) {
+            if(file.startsWith(DESCRIPTOR_FILE_NAME))
+                return file;
+        }
+
+        String extension = "." + PipelineSerialization.getFileExtensionFromFormat(serializationFormat);
+        return DESCRIPTOR_FILE_NAME + extension;
     }
 
 }

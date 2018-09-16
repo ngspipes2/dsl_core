@@ -106,4 +106,11 @@ public class IOUtils {
         }
     }
 
+    public static void deleteFile(String dirPath) {
+        File file = new File(dirPath);
+
+        if(file.exists())
+            file.delete();
+    }
+
 }
