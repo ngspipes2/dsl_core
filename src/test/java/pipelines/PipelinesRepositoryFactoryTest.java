@@ -9,18 +9,38 @@ import pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository.GithubPipelines
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository.LocalPipelinesRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository.MemoryPipelinesRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository.ServerPipelinesRepository;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsRepository;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class PipelinesRepositoryFactoryTest {
 
+    private static final String ACCESS_TOKEN = null;
+    private static final String USER_NAME = "NGSPipesShare";
+
+
+
+    private static Map<String, Object> getGithubConfig() {
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(GithubToolsRepository.USER_NAME_CONFIG_KEY, USER_NAME);
+        config.put(GithubToolsRepository.ACCESS_TOKEN_CONFIG_KEY, ACCESS_TOKEN);
+
+        return config;
+    }
+
+
+
     @Test
     public void getExistentGithubRepositoryTest() throws PipelinesRepositoryException {
         String location = "ngspipes2/pipelines_support";
 
-        IPipelinesRepository repository = PipelinesRepositoryFactory.create(location, null);
+        IPipelinesRepository repository = PipelinesRepositoryFactory.create(location, getGithubConfig());
 
         assertNotNull(repository);
         assertTrue(GithubPipelinesRepository.class.isAssignableFrom(repository.getClass()));
@@ -31,7 +51,7 @@ public class PipelinesRepositoryFactoryTest {
     public void getNonExistentGithubRepositoryTest() throws PipelinesRepositoryException {
         String location = "ngspipes2/non_existest_repository";
 
-        IPipelinesRepository repository = PipelinesRepositoryFactory.create(location, null);
+        IPipelinesRepository repository = PipelinesRepositoryFactory.create(location, getGithubConfig());
 
         assertNull(repository);
     }
