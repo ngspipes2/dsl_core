@@ -52,7 +52,7 @@ public class ServerPipelinesRepository extends PipelinesRepository {
             Response response = client.newCall(request).execute();
 
             return response.header("Allow") != null || response.header("Allow").contains("GET");
-        } catch (IOException e) {
+        } catch (IllegalArgumentException | IOException e) {
             if(e instanceof MalformedURLException)
                 return false;
 
