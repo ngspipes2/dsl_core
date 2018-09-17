@@ -2,13 +2,12 @@ package pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
+import okhttp3.*;
 import org.apache.http.HttpStatus;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jackson_entities.typed.TypedPipelineDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.JacksonEntityService;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelinesDescriptorUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.utils.HttpUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
@@ -16,8 +15,6 @@ import pt.isel.ngspipes.pipeline_repository.PipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,8 +23,17 @@ import java.util.Map;
 
 public class ServerPipelinesRepository extends PipelinesRepository {
 
+    public static final String USER_NAME_CONFIG_KEY = "username";
+    public static final String PASSWORD_CONFIG_KEY = "password";
+    public static final String ACCESS_TOKEN_CONFIG_KEY = "token";
+
+
+
     // IMPLEMENTATION OF IPipelinesRepositoryFactory
     public static IPipelinesRepository create(String location, Map<String, Object> config) throws PipelinesRepositoryException {
+        if(config == null)
+            config = new HashMap<>();
+
         if(!verifyLocation(location))
             return null;
 
@@ -36,7 +42,16 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
     private static boolean verifyLocation(String location) throws PipelinesRepositoryException {
         try {
-            return HttpUtils.canConnect(location + "/pipelines");
+            OkHttpClient client = new OkHttpClient.Builder().build();
+            RequestBody body = RequestBody.create(MediaType.get("text/plain"), "");
+            Request request = new Request.Builder()
+                    .url(location + "/pipelines")
+                    .method("OPTIONS", body)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return response.header("Allow") != null || response.header("Allow").contains("GET");
         } catch (IOException e) {
             if(e instanceof MalformedURLException)
                 return false;
@@ -47,6 +62,9 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
 
 
+    private String userName;
+    private String password;
+    private String token;
     private Serialization.Format serializationFormat;
 
 
@@ -58,33 +76,45 @@ public class ServerPipelinesRepository extends PipelinesRepository {
     public ServerPipelinesRepository(String location, Map<String, Object> config, Serialization.Format serializationFormat) {
         super(location, config);
         this.serializationFormat = serializationFormat;
+
+        this.userName = (String)config.get(USER_NAME_CONFIG_KEY);
+        this.password = (String)config.get(PASSWORD_CONFIG_KEY);
+        this.token = (String)config.get(ACCESS_TOKEN_CONFIG_KEY);
     }
 
 
 
     @Override
     public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
-        String url = getPipelinesUrl();
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getGETConnection(url, getFormatHeaders());
-            return getPipelinesFromConnection(connection);
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getPipelinesUrl())
+                    .header("Accept", getAcceptHeader())
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return handleGetAllResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error getting pipelines from Server!" + getErrorMessage(connection);
-            throw new PipelinesRepositoryException(errorMessage, e);
+            throw new PipelinesRepositoryException("Error getting pipelines from Server!", e);
         } catch (DSLCoreException e) {
             throw new PipelinesRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
         }
     }
 
-    private Collection<IPipelineDescriptor> getPipelinesFromConnection(HttpURLConnection connection) throws IOException, DSLCoreException, PipelinesRepositoryException {
-        String content = IOUtils.toString(connection.getInputStream());
-        String httpHeader = connection.getContentType();
+    private Collection<IPipelineDescriptor> handleGetAllResponse(Response response) throws PipelinesRepositoryException, IOException, DSLCoreException {
+        ResponseBody body = response.body();
 
+        if(body == null)
+            throw new PipelinesRepositoryException("Server returned invalid pipelines content!");
+
+        String content = body.string();
+
+        if(content == null || content.isEmpty())
+            throw new PipelinesRepositoryException("Server returned invalid pipelines content!");
+
+        String httpHeader =  response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
         JavaType klass = new ObjectMapper().getTypeFactory().constructCollectionType(List.class, TypedPipelineDescriptor.class);
@@ -93,44 +123,38 @@ public class ServerPipelinesRepository extends PipelinesRepository {
         return JacksonEntityService.transformToIPipelineDescriptor(typedPipelines);
     }
 
-    private Map<String, String> getFormatHeaders() throws DSLCoreException, PipelinesRepositoryException {
-        Map<String, String> headers = new HashMap<>();
-
-        String format = Serialization.getHttpHeaderFromFormat(serializationFormat);
-        headers.put("Accept", format);
-        headers.put("Content-Type", format);
-
-        return headers;
-    }
-
 
     @Override
     public IPipelineDescriptor get(String pipelineName) throws PipelinesRepositoryException {
-        String url = getPipelineUrl(pipelineName);
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getGETConnection(url, getFormatHeaders());
-            return getPipelineFromConnection(connection);
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getPipelineUrl(pipelineName))
+                    .header("Accept", getAcceptHeader())
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return handleGetResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error getting pipeline " + pipelineName + " from Server!" + getErrorMessage(connection);
-            throw new PipelinesRepositoryException(errorMessage, e);
+            throw new PipelinesRepositoryException("Error getting pipeline " + pipelineName + " from Server!", e);
         } catch (DSLCoreException e) {
             throw new PipelinesRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
         }
     }
 
-    private IPipelineDescriptor getPipelineFromConnection(HttpURLConnection connection) throws IOException, DSLCoreException, PipelinesRepositoryException {
-        String content = IOUtils.toString(connection.getInputStream());
+    private IPipelineDescriptor handleGetResponse(Response response) throws IOException, DSLCoreException, PipelinesRepositoryException {
+        ResponseBody body = response.body();
+
+        if(body == null)
+            return null;
+
+        String content = body.string();
 
         if(content == null || content.isEmpty())
             return null;
 
-        String httpHeader = connection.getContentType();
-
+        String httpHeader =  response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
         return PipelinesDescriptorUtils.createPipelineDescriptor(content, format);
@@ -139,34 +163,31 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
     @Override
     public void update(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
-        String url = getPipelineUrl(pipeline.getName());
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getPUTConnection(url, getFormatHeaders());
-            update(pipeline, connection);
+            String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
+            RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
+
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getPipelineUrl(pipeline.getName()))
+                    .put(body)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            handleUpdateResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error updating Pipeline " + pipeline.getName() + " on Server!" + getErrorMessage(connection);
-            throw new PipelinesRepositoryException(errorMessage, e);
-        } catch (DSLCoreException e) {
-            throw new PipelinesRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
+            throw new PipelinesRepositoryException("Error updating pipeline " + pipeline.getName() + " from Server!", e);
         }
     }
 
-    private void update(IPipelineDescriptor pipeline, HttpURLConnection connection) throws IOException, DSLCoreException, PipelinesRepositoryException {
-        String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
-
-        connection.setRequestProperty("Content-Length", Integer.toString(content.length()));
-        connection.setRequestProperty("Content-Type", Serialization.getHttpHeaderFromFormat(serializationFormat));
-
-        IOUtils.write(content, connection.getOutputStream());
-
-        if(connection.getResponseCode() != HttpStatus.SC_OK) {
+    private void handleUpdateResponse(Response response) throws IOException, PipelinesRepositoryException {
+        if(response.code() != HttpStatus.SC_OK) {
             String message = "Pipeline could not be updated!";
-            message += IOUtils.toString(connection.getInputStream());
+
+            if(response.body() != null)
+                message += response.body().string();
+
             throw new PipelinesRepositoryException(message);
         }
     }
@@ -174,34 +195,31 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
     @Override
     public void insert(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
-        String url = getPipelinesUrl();
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getPOSTConnection(url, getFormatHeaders());
-            insert(pipeline, connection);
+            String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
+            RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
+
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getPipelinesUrl())
+                    .post(body)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            handleInsertResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error inserting pipeline " + pipeline.getName() + " on Server!" + getErrorMessage(connection);
-            throw new PipelinesRepositoryException(errorMessage, e);
-        } catch (DSLCoreException e) {
-            throw new PipelinesRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
+            throw new PipelinesRepositoryException("Error inserting pipeline " + pipeline.getName() + " from Server!", e);
         }
     }
 
-    private void insert(IPipelineDescriptor pipeline, HttpURLConnection connection) throws IOException, DSLCoreException, PipelinesRepositoryException {
-        String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
-
-        connection.setRequestProperty("Content-Length", Integer.toString(content.length()));
-        connection.setRequestProperty("Content-Type", Serialization.getHttpHeaderFromFormat(serializationFormat));
-
-        IOUtils.write(content, connection.getOutputStream());
-
-        if(connection.getResponseCode() != HttpStatus.SC_CREATED && connection.getResponseCode() != HttpStatus.SC_OK) {
+    private void handleInsertResponse(Response response) throws IOException, PipelinesRepositoryException {
+        if(response.code() != HttpStatus.SC_CREATED && response.code() != HttpStatus.SC_OK) {
             String message = "Pipeline could not be inserted!";
-            message += IOUtils.toString(connection.getInputStream());
+
+            if(response.body() != null)
+                message += response.body().string();
+
             throw new PipelinesRepositoryException(message);
         }
     }
@@ -209,27 +227,28 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
     @Override
     public void delete(String pipelineName) throws PipelinesRepositoryException {
-        String url = getPipelineUrl(pipelineName);
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getDELETEConnection(url, getFormatHeaders());
-            delete(pipelineName, connection);
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getPipelineUrl(pipelineName))
+                    .delete()
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            handleDeleteResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error deleting pipeline " + pipelineName + " on Server!" + getErrorMessage(connection);
-            throw new PipelinesRepositoryException(errorMessage, e);
-        } catch (DSLCoreException e) {
-            throw new PipelinesRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
+            throw new PipelinesRepositoryException("Error deleting pipeline " + pipelineName + " from Server!", e);
         }
     }
 
-    private void delete(String pipelineName, HttpURLConnection connection) throws IOException, PipelinesRepositoryException {
-        if(connection.getResponseCode() != HttpStatus.SC_OK) {
+    private void handleDeleteResponse(Response response) throws IOException, PipelinesRepositoryException {
+        if(response.code() != HttpStatus.SC_OK) {
             String message = "Pipeline could not be deleted!";
-            message += IOUtils.toString(connection.getInputStream());
+
+            if(response.body() != null)
+                message += response.body().string();
+
             throw new PipelinesRepositoryException(message);
         }
     }
@@ -243,14 +262,38 @@ public class ServerPipelinesRepository extends PipelinesRepository {
         return getPipelinesUrl() + "/" + pipelineName;
     }
 
-    private String getErrorMessage(HttpURLConnection connection) {
-        try{
-            InputStream stream = connection.getErrorStream();
-            if(stream != null)
-                return IOUtils.toString(stream);
-        } catch (IOException e) { }
+    private String getAcceptHeader() throws PipelinesRepositoryException {
+        try {
+            return Serialization.getHttpHeaderFromFormat(serializationFormat);
+        } catch (DSLCoreException e) {
+            throw new PipelinesRepositoryException(e.getMessage(), e);
+        }
+    }
 
-        return "";
+    private String getContentTypeHeader() throws PipelinesRepositoryException {
+        try {
+            return Serialization.getHttpHeaderFromFormat(serializationFormat);
+        } catch (DSLCoreException e) {
+            throw new PipelinesRepositoryException(e.getMessage(), e);
+        }
+    }
+
+    private OkHttpClient createClient() {
+        return new OkHttpClient.Builder()
+            .authenticator((route, response) -> {
+                    String credentials = null;
+
+                    if(this.password != null)
+                        credentials = Credentials.basic(this.userName, this.password);
+                    else if(this.token != null)
+                        credentials = "Bearer " + this.token;
+
+                    if(credentials != null)
+                        return response.request().newBuilder().header("Authorization", credentials).build();
+
+                    return response.request().newBuilder().build();
+            })
+            .build();
     }
 
 }

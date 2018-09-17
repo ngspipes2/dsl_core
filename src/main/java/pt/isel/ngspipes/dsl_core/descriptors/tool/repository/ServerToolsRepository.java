@@ -3,11 +3,11 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
-import org.apache.commons.io.IOUtils;
+import okhttp3.*;
 import org.apache.http.HttpStatus;
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.utils.HttpUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.*;
 import pt.isel.ngspipes.tool_descriptor.interfaces.*;
@@ -16,8 +16,6 @@ import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,8 +24,17 @@ import java.util.Map;
 
 public class ServerToolsRepository extends ToolsRepository {
 
+    public static final String USER_NAME_CONFIG_KEY = "username";
+    public static final String PASSWORD_CONFIG_KEY = "password";
+    public static final String ACCESS_TOKEN_CONFIG_KEY = "token";
+
+
+
     // IMPLEMENTATION OF IToolRepositoryFactory
     public static IToolsRepository create(String location, Map<String, Object> config) throws ToolsRepositoryException {
+        if(config == null)
+            config = new HashMap<>();
+
         if(!verifyLocation(location))
             return null;
 
@@ -36,7 +43,16 @@ public class ServerToolsRepository extends ToolsRepository {
 
     private static boolean verifyLocation(String location) throws ToolsRepositoryException {
         try {
-            return HttpUtils.canConnect(location + "/tools");
+            OkHttpClient client = new OkHttpClient.Builder().build();
+            RequestBody body = RequestBody.create(MediaType.get("text/plain"), "");
+            Request request = new Request.Builder()
+                    .url(location + "/tools")
+                    .method("OPTIONS", body)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return response.header("Allow") != null || response.header("Allow").contains("GET");
         } catch (IOException e) {
             if(e instanceof MalformedURLException)
                 return false;
@@ -47,6 +63,9 @@ public class ServerToolsRepository extends ToolsRepository {
 
 
 
+    private String userName;
+    private String password;
+    private String token;
     private Serialization.Format serializationFormat;
     private SimpleAbstractTypeResolver resolver;
     private JavaType klass;
@@ -59,9 +78,13 @@ public class ServerToolsRepository extends ToolsRepository {
 
     public ServerToolsRepository(String location, Map<String, Object> config, Serialization.Format serializationFormat) {
         super(location, config);
+
         this.serializationFormat = serializationFormat;
         this.resolver = getResolver();
         this.klass = getKlass();
+        this.userName = (String)config.get(USER_NAME_CONFIG_KEY);
+        this.password = (String)config.get(PASSWORD_CONFIG_KEY);
+        this.token = (String)config.get(ACCESS_TOKEN_CONFIG_KEY);
     }
 
     private SimpleAbstractTypeResolver getResolver() {
@@ -84,37 +107,35 @@ public class ServerToolsRepository extends ToolsRepository {
 
     @Override
     public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
-        String url = getToolsUrl();
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getGETConnection(url, getFormatHeaders());
-            return getToolsFromConnection(connection);
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getToolsUrl())
+                    .header("Accept", getAcceptHeader())
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return handleGetAllResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error getting tools from Server!" + getErrorMessage(connection);
-            throw new ToolsRepositoryException(errorMessage, e);
+            throw new ToolsRepositoryException("Error getting tools from Server!", e);
         } catch (DSLCoreException e) {
             throw new ToolsRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
         }
     }
 
-    private Map<String, String> getFormatHeaders() throws DSLCoreException {
-        Map<String, String> headers = new HashMap<>();
+    private Collection<IToolDescriptor> handleGetAllResponse(Response response) throws IOException, DSLCoreException, ToolsRepositoryException {
+        ResponseBody body = response.body();
 
-        String format = Serialization.getHttpHeaderFromFormat(serializationFormat);
-        headers.put("Accept", format);
-        headers.put("Content-Type", format);
+        if(body == null)
+            throw new ToolsRepositoryException("Server returned invalid tools content!");
 
-        return headers;
-    }
+        String content = body.string();
 
-    private Collection<IToolDescriptor> getToolsFromConnection(HttpURLConnection connection) throws IOException, DSLCoreException {
-        String content = IOUtils.toString(connection.getInputStream());
-        String httpHeader = connection.getContentType();
+        if(content == null || content.isEmpty())
+            throw new ToolsRepositoryException("Server returned invalid tools content!");
 
+        String httpHeader = response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
         JavaType klass = new ObjectMapper().getTypeFactory().constructCollectionType(List.class, ToolDescriptor.class);
@@ -125,31 +146,35 @@ public class ServerToolsRepository extends ToolsRepository {
 
     @Override
     public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
-        String url = getToolUrl(toolName);
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getGETConnection(url, getFormatHeaders());
-            return getToolFromConnection(connection);
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getToolUrl(toolName))
+                    .header("Accept", getAcceptHeader())
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return handleGetResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error getting tool " + toolName + " from Server!" + getErrorMessage(connection);
-            throw new ToolsRepositoryException(errorMessage, e);
+            throw new ToolsRepositoryException("Error getting tool " + toolName + " from Server!", e);
         } catch (DSLCoreException e) {
             throw new ToolsRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
         }
     }
 
-    private IToolDescriptor getToolFromConnection(HttpURLConnection connection) throws IOException, DSLCoreException {
-        String content = IOUtils.toString(connection.getInputStream());
+    private IToolDescriptor handleGetResponse(Response response) throws IOException, DSLCoreException {
+        ResponseBody body = response.body();
+
+        if(body == null)
+            return null;
+
+        String content = body.string();
 
         if(content == null || content.isEmpty())
             return null;
 
-        String httpHeader = connection.getContentType();
-
+        String httpHeader = response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
         return Serialization.deserialize(content, format, klass, resolver);
@@ -158,33 +183,31 @@ public class ServerToolsRepository extends ToolsRepository {
 
     @Override
     public void update(IToolDescriptor tool) throws ToolsRepositoryException {
-        String url = getToolUrl(tool.getName());
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getPUTConnection(url, getFormatHeaders());
-            update(tool, connection);
+            String content = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, serializationFormat);
+            RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
+
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getToolUrl(tool.getName()))
+                    .put(body)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            handleUpdateResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error updating tool " + tool.getName() + " on Server!" + getErrorMessage(connection);
-            throw new ToolsRepositoryException(errorMessage, e);
-        } catch (DSLCoreException e) {
-            throw new ToolsRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
+            throw new ToolsRepositoryException("Error updating tool " + tool.getName() + " from Server!", e);
         }
     }
 
-    private void update(IToolDescriptor tool, HttpURLConnection connection) throws IOException, DSLCoreException, ToolsRepositoryException {
-        String content = Serialization.serialize(tool, serializationFormat, getResolver());
-
-        connection.setRequestProperty("Content-Length", Integer.toString(content.length()));
-
-        IOUtils.write(content, connection.getOutputStream());
-
-        if(connection.getResponseCode() != HttpStatus.SC_OK) {
+    private void handleUpdateResponse(Response response) throws IOException, ToolsRepositoryException {
+        if(response.code() != HttpStatus.SC_OK) {
             String message = "Tool could not be updated!";
-            message += IOUtils.toString(connection.getInputStream());
+
+            if(response.body() != null)
+                message += response.body().string();
+
             throw new ToolsRepositoryException(message);
         }
     }
@@ -192,33 +215,31 @@ public class ServerToolsRepository extends ToolsRepository {
 
     @Override
     public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
-        String url = getToolsUrl();
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getPOSTConnection(url, getFormatHeaders());
-            insert(tool, connection);
+            String content = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, serializationFormat);
+            RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
+
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getToolsUrl())
+                    .post(body)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            handleInsertResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error inserting tool " + tool.getName() + " on Server!" + getErrorMessage(connection);
-            throw new ToolsRepositoryException(errorMessage, e);
-        } catch (DSLCoreException e) {
-            throw new ToolsRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
+            throw new ToolsRepositoryException("Error inserting tool " + tool.getName() + " from Server!", e);
         }
     }
 
-    private void insert(IToolDescriptor tool, HttpURLConnection connection) throws IOException, DSLCoreException, ToolsRepositoryException {
-        String content = Serialization.serialize(tool, serializationFormat, getResolver());
-
-        connection.setRequestProperty("Content-Length", Integer.toString(content.length()));
-
-        IOUtils.write(content, connection.getOutputStream());
-
-        if(connection.getResponseCode() != HttpStatus.SC_CREATED && connection.getResponseCode() != HttpStatus.SC_OK) {
+    private void handleInsertResponse(Response response) throws IOException, ToolsRepositoryException {
+        if(response.code() != HttpStatus.SC_CREATED && response.code() != HttpStatus.SC_OK) {
             String message = "Tool could not be inserted!";
-            message += IOUtils.toString(connection.getInputStream());
+
+            if(response.body() != null)
+                message += response.body().string();
+
             throw new ToolsRepositoryException(message);
         }
     }
@@ -226,27 +247,28 @@ public class ServerToolsRepository extends ToolsRepository {
 
     @Override
     public void delete(String toolName) throws ToolsRepositoryException {
-        String url = getToolUrl(toolName);
-
-        HttpURLConnection connection = null;
         try {
-            connection = HttpUtils.getDELETEConnection(url, getFormatHeaders());
-            delete(toolName, connection);
+            OkHttpClient client = createClient();
+            Request request = new Request.Builder()
+                    .url(getToolUrl(toolName))
+                    .delete()
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            handleDeleteResponse(response);
         } catch (IOException e) {
-            String errorMessage = "Error deleting tool " + toolName + " on Server!" + getErrorMessage(connection);
-            throw new ToolsRepositoryException(errorMessage, e);
-        } catch (DSLCoreException e) {
-            throw new ToolsRepositoryException(e.getMessage(), e);
-        } finally {
-            if(connection != null)
-                connection.disconnect();
+            throw new ToolsRepositoryException("Error deleting tool " + toolName + " from Server!", e);
         }
     }
 
-    private void delete(String toolName, HttpURLConnection connection) throws IOException, ToolsRepositoryException {
-        if(connection.getResponseCode() != HttpStatus.SC_OK) {
+    private void handleDeleteResponse(Response response) throws IOException, ToolsRepositoryException {
+        if(response.code() != HttpStatus.SC_OK) {
             String message = "Tool could not be deleted!";
-            message += IOUtils.toString(connection.getInputStream());
+
+            if(response.body() != null)
+                message += response.body().string();
+
             throw new ToolsRepositoryException(message);
         }
     }
@@ -260,14 +282,39 @@ public class ServerToolsRepository extends ToolsRepository {
         return getToolsUrl() + "/" + toolName;
     }
 
-    private String getErrorMessage(HttpURLConnection connection) {
-        try{
-            InputStream stream = connection.getErrorStream();
-            if(stream != null)
-                return IOUtils.toString(stream);
-        } catch (IOException e) { }
+    private String getAcceptHeader() throws ToolsRepositoryException {
+        try {
+            return Serialization.getHttpHeaderFromFormat(serializationFormat);
+        } catch (DSLCoreException e) {
+            throw new ToolsRepositoryException(e.getMessage(), e);
+        }
+    }
 
-        return "";
+    private String getContentTypeHeader() throws ToolsRepositoryException {
+        try {
+            return Serialization.getHttpHeaderFromFormat(serializationFormat);
+        } catch (DSLCoreException e) {
+            throw new ToolsRepositoryException(e.getMessage(), e);
+        }
+    }
+
+    private OkHttpClient createClient() {
+        return new OkHttpClient.Builder()
+                .authenticator((route, response) -> {
+                    String credentials = null;
+
+                    if(this.password != null)
+                        credentials = Credentials.basic(this.userName, this.password);
+                    else if(this.token != null)
+                        credentials = "Bearer " + this.token;
+
+                    if(credentials != null)
+                        return response.request().newBuilder().header("Authorization", credentials).build();
+
+                    return response.request().newBuilder().build();
+                })
+                .build();
     }
 
 }
+

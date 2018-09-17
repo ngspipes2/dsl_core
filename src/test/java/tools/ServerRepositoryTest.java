@@ -10,6 +10,8 @@ import tools.servers.EmptyToolsRepositoryServer;
 import tools.servers.NotEmptyToolsRepositoryServer;
 import utils.ToolsRepositoryException;
 
+import java.util.HashMap;
+
 public class ServerRepositoryTest {
 
     private static String location;
@@ -38,26 +40,26 @@ public class ServerRepositoryTest {
 
     @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.insertNonExistentToolTest(repository);
     }
 
     @Test(expected = ToolsRepositoryException.class)
     public void insertExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.insertExistentToolTest(repository,"Blast");
     }
 
 
     @Test
     public void deleteNonExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.deleteNonExistentToolTest(repository);
     }
 
     @Test
     public void deleteExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
 
         String toolName = null;
 
@@ -73,13 +75,13 @@ public class ServerRepositoryTest {
 
     @Test(expected = ToolsRepositoryException.class)
     public void updateNonExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.updateNonExistentToolTest(repository);
     }
 
     @Test
     public void updateExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
 
         String toolName = null;
 
@@ -95,26 +97,26 @@ public class ServerRepositoryTest {
 
     @Test
     public void getNonExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.getNonExistentToolTest(repository);
     }
 
     @Test
     public void getExistentToolTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.getExistentToolTest(repository, "Blast");
     }
 
 
     @Test
     public void getAllWithEmptyResultTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(emptyLocation, null);
+        ServerToolsRepository repository = new ServerToolsRepository(emptyLocation, new HashMap<>());
         ToolsRepositoryTestUtils.getAllWithEmptyResultTest(repository);
     }
 
     @Test
     public void getAllWithNonEmptyResultTest() throws ToolsRepositoryException {
-        ServerToolsRepository repository = new ServerToolsRepository(location, null);
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.getAllWithNonEmptyResultTest(repository, "Blast", "Velvet", "Trimmomatic");
     }
 
