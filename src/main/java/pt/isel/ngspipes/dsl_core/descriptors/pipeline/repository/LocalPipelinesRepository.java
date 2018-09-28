@@ -9,7 +9,6 @@ import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelinesDescriptorU
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
-import pt.isel.ngspipes.pipeline_repository.PipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.io.IOException;
@@ -18,7 +17,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 
-public class LocalPipelinesRepository extends PipelinesRepository {
+public class LocalPipelinesRepository extends WrapperPipelinesRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
@@ -102,7 +101,7 @@ public class LocalPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
+    public Collection<IPipelineDescriptor> getAllWrapped() throws PipelinesRepositoryException {
         Collection<String> names = IOUtils.getSubDirectoriesName(location);
         Collection<IPipelineDescriptor> pipelines = new LinkedList<>();
 
@@ -114,7 +113,7 @@ public class LocalPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public IPipelineDescriptor get(String pipelineName) throws PipelinesRepositoryException {
+    public IPipelineDescriptor getWrapped(String pipelineName) throws PipelinesRepositoryException {
         PipelineInfo pipelineInfo = createPipelineInfo(pipelineName);
 
         if(!pipelineInfo.existsPipeline)
@@ -152,7 +151,7 @@ public class LocalPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public void update(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
+    public void updateWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         PipelineInfo pipelineInfo = createPipelineInfo(pipeline.getName());
 
         if(!pipelineInfo.existsPipeline)
@@ -187,7 +186,7 @@ public class LocalPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public void insert(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
+    public void insertWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         PipelineInfo pipelineInfo = createPipelineInfo(pipeline.getName());
 
         if(pipelineInfo.existsPipeline)

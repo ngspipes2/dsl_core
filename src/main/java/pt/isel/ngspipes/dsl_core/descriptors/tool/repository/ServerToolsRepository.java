@@ -7,22 +7,17 @@ import okhttp3.*;
 import org.apache.http.HttpStatus;
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.*;
 import pt.isel.ngspipes.tool_descriptor.interfaces.*;
-import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class ServerToolsRepository extends ToolsRepository {
+public class ServerToolsRepository extends WrapperToolsRepository {
 
     public static final String USER_NAME_CONFIG_KEY = "username";
     public static final String PASSWORD_CONFIG_KEY = "password";
@@ -106,10 +101,10 @@ public class ServerToolsRepository extends ToolsRepository {
 
 
     @Override
-    public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
+    protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
         try {
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getToolsUrl())
                     .header("Accept", getAcceptHeader())
                     .build();
@@ -145,10 +140,10 @@ public class ServerToolsRepository extends ToolsRepository {
 
 
     @Override
-    public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
+    protected IToolDescriptor getWrapped(String toolName) throws ToolsRepositoryException {
         try {
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getToolUrl(toolName))
                     .header("Accept", getAcceptHeader())
                     .build();
@@ -182,13 +177,13 @@ public class ServerToolsRepository extends ToolsRepository {
 
 
     @Override
-    public void update(IToolDescriptor tool) throws ToolsRepositoryException {
+    protected void updateWrapped(IToolDescriptor tool) throws ToolsRepositoryException {
         try {
-            String content = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, serializationFormat);
+            String content = Serialization.serialize(tool, serializationFormat);
             RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
 
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getToolUrl(tool.getName()))
                     .put(body)
                     .build();
@@ -198,6 +193,8 @@ public class ServerToolsRepository extends ToolsRepository {
             handleUpdateResponse(response);
         } catch (IOException e) {
             throw new ToolsRepositoryException("Error updating tool " + tool.getName() + " from Server!", e);
+        } catch(DSLCoreException e) {
+            throw new ToolsRepositoryException(e.getMessage(), e);
         }
     }
 
@@ -214,13 +211,13 @@ public class ServerToolsRepository extends ToolsRepository {
 
 
     @Override
-    public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
+    protected void insertWrapped(IToolDescriptor tool) throws ToolsRepositoryException {
         try {
-            String content = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, serializationFormat);
+            String content = Serialization.serialize(tool, serializationFormat);
             RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
 
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getToolsUrl())
                     .post(body)
                     .build();
@@ -230,6 +227,8 @@ public class ServerToolsRepository extends ToolsRepository {
             handleInsertResponse(response);
         } catch (IOException e) {
             throw new ToolsRepositoryException("Error inserting tool " + tool.getName() + " from Server!", e);
+        } catch(DSLCoreException e) {
+            throw new ToolsRepositoryException(e.getMessage(), e);
         }
     }
 
@@ -249,7 +248,7 @@ public class ServerToolsRepository extends ToolsRepository {
     public void delete(String toolName) throws ToolsRepositoryException {
         try {
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getToolUrl(toolName))
                     .delete()
                     .build();
@@ -298,22 +297,25 @@ public class ServerToolsRepository extends ToolsRepository {
         }
     }
 
+    private Request.Builder createRequestBuilder() {
+        Request.Builder builder = new Request.Builder();
+
+        String credentials = null;
+
+        if(this.password != null)
+            credentials = Base64.getEncoder().encodeToString((this.userName + ":" + this.password).getBytes());
+        else if(this.token != null)
+            credentials = "Bearer " + this.token;
+
+        if(credentials != null)
+            builder = builder.addHeader("Authorization", credentials);
+
+
+        return builder;
+    }
+
     private OkHttpClient createClient() {
-        return new OkHttpClient.Builder()
-                .authenticator((route, response) -> {
-                    String credentials = null;
-
-                    if(this.password != null)
-                        credentials = Credentials.basic(this.userName, this.password);
-                    else if(this.token != null)
-                        credentials = "Bearer " + this.token;
-
-                    if(credentials != null)
-                        return response.request().newBuilder().header("Authorization", credentials).build();
-
-                    return response.request().newBuilder().build();
-                })
-                .build();
+        return new OkHttpClient.Builder().build();
     }
 
 }

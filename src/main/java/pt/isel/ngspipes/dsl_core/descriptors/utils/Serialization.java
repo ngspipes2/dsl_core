@@ -3,6 +3,8 @@ package pt.isel.ngspipes.dsl_core.descriptors.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 
@@ -21,19 +23,35 @@ public class Serialization {
         return serialize(obj, format, null);
     }
 
+    public static String serialize(Object obj, Class<?> klass, Format format) throws DSLCoreException {
+        return serialize(obj, klass, format, null);
+    }
+
     public static String serialize(Object obj, Format format, SimpleAbstractTypeResolver resolver) throws DSLCoreException {
+        return serialize(obj, obj.getClass(), format, resolver);
+    }
+
+    public static String serialize(Object obj, Class<?> klass, Format format, SimpleAbstractTypeResolver resolver) throws DSLCoreException {
         if(format.equals(Format.JSON))
-            return serialize(obj, JacksonUtils.getJSONMapper(resolver));
+            return serialize(obj, klass, JacksonUtils.getJSONMapper(resolver));
 
         if(format.equals(Format.YAML))
-            return serialize(obj, JacksonUtils.getYAMLMapper(resolver));
+            return serialize(obj, klass, JacksonUtils.getYAMLMapper(resolver));
 
         throw new DSLCoreException("Unknown Format:" + format);
     }
 
-    private static String serialize(Object obj, ObjectMapper mapper) throws DSLCoreException {
+    public static String serialize(Object obj, ObjectMapper mapper) throws DSLCoreException {
+        return serialize(obj, obj.getClass(), mapper);
+    }
+
+    public static String serialize(Object obj, Class<?> klass,  ObjectMapper mapper) throws DSLCoreException {
+        return serialize(obj, mapper.writerFor(klass));
+    }
+
+    public static String serialize(Object obj, ObjectWriter writer) throws DSLCoreException {
         try {
-            return mapper.writeValueAsString(obj);
+            return writer.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             throw new DSLCoreException("Error serializing Object!", e);
         }
@@ -55,8 +73,12 @@ public class Serialization {
     }
 
     public static <T> T deserialize(String content, JavaType klass, ObjectMapper mapper) throws DSLCoreException {
+        return deserialize(content, mapper.readerFor(klass));
+    }
+
+    public static <T> T deserialize(String content, ObjectReader reader) throws DSLCoreException {
         try {
-            return mapper.readValue(content, klass);
+            return reader.readValue(content);
         } catch (IOException e) {
             throw new DSLCoreException("Error deserialize Object!", e);
         }

@@ -12,7 +12,6 @@ import pt.isel.ngspipes.dsl_core.descriptors.utils.GithubAPI;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
-import pt.isel.ngspipes.pipeline_repository.PipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.io.IOException;
@@ -21,7 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class GithubPipelinesRepository extends PipelinesRepository {
+public class GithubPipelinesRepository extends WrapperPipelinesRepository {
 
     public static final String USER_NAME_CONFIG_KEY = "username";
     public static final String PASSWORD_CONFIG_KEY = "password";
@@ -137,7 +136,7 @@ public class GithubPipelinesRepository extends PipelinesRepository {
 
     // IMPLEMENTATION OF PipelinesRepository
     @Override
-    public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
+    public Collection<IPipelineDescriptor> getAllWrapped() throws PipelinesRepositoryException {
         init();
 
         Collection<String> names = getPipelinesName();
@@ -151,7 +150,7 @@ public class GithubPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public IPipelineDescriptor get(String pipelineName) throws PipelinesRepositoryException {
+    public IPipelineDescriptor getWrapped(String pipelineName) throws PipelinesRepositoryException {
         init();
 
         PipelineInfo pipelineInfo = createPipelineInfo(pipelineName);
@@ -191,7 +190,7 @@ public class GithubPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public void update(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
+    public void updateWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         init();
 
         PipelineInfo pipelineInfo = createPipelineInfo(pipeline.getName());
@@ -233,7 +232,7 @@ public class GithubPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public void insert(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
+    public void insertWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         init();
 
         PipelineInfo pipelineInfo = createPipelineInfo(pipeline.getName());

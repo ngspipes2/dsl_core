@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedCommandDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedParameterDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedCommandDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedParameterDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedToolDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.implementations.ExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.implementations.OutputDescriptor;
@@ -14,7 +14,7 @@ import pt.isel.ngspipes.tool_descriptor.implementations.ToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.*;
 import utils.ToolsRepositoryException;
 
-public class ToolsDescriptorsUtils {
+public class FileBasedToolsDescriptorsUtils {
 
     public static IToolDescriptor createToolDescriptor(String content, String fileExtension) throws ToolsRepositoryException {
         Serialization.Format format;

@@ -11,17 +11,13 @@ import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelinesDescriptorU
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
-import pt.isel.ngspipes.pipeline_repository.PipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class ServerPipelinesRepository extends PipelinesRepository {
+public class ServerPipelinesRepository extends WrapperPipelinesRepository {
 
     public static final String USER_NAME_CONFIG_KEY = "username";
     public static final String PASSWORD_CONFIG_KEY = "password";
@@ -85,10 +81,10 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
+    public Collection<IPipelineDescriptor> getAllWrapped() throws PipelinesRepositoryException {
         try {
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getPipelinesUrl())
                     .header("Accept", getAcceptHeader())
                     .build();
@@ -125,10 +121,10 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public IPipelineDescriptor get(String pipelineName) throws PipelinesRepositoryException {
+    public IPipelineDescriptor getWrapped(String pipelineName) throws PipelinesRepositoryException {
         try {
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getPipelineUrl(pipelineName))
                     .header("Accept", getAcceptHeader())
                     .build();
@@ -162,13 +158,13 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public void update(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
+    public void updateWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         try {
             String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
             RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
 
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getPipelineUrl(pipeline.getName()))
                     .put(body)
                     .build();
@@ -194,13 +190,13 @@ public class ServerPipelinesRepository extends PipelinesRepository {
 
 
     @Override
-    public void insert(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
+    public void insertWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         try {
             String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
             RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
 
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getPipelinesUrl())
                     .post(body)
                     .build();
@@ -229,7 +225,7 @@ public class ServerPipelinesRepository extends PipelinesRepository {
     public void delete(String pipelineName) throws PipelinesRepositoryException {
         try {
             OkHttpClient client = createClient();
-            Request request = new Request.Builder()
+            Request request = createRequestBuilder()
                     .url(getPipelineUrl(pipelineName))
                     .delete()
                     .build();
@@ -278,22 +274,25 @@ public class ServerPipelinesRepository extends PipelinesRepository {
         }
     }
 
+    private Request.Builder createRequestBuilder() {
+        Request.Builder builder = new Request.Builder();
+
+        String credentials = null;
+
+        if(this.password != null)
+            credentials = Base64.getEncoder().encodeToString((this.userName + ":" + this.password).getBytes());
+        else if(this.token != null)
+            credentials = "Bearer " + this.token;
+
+        if(credentials != null)
+            builder = builder.addHeader("Authorization", credentials);
+
+
+        return builder;
+    }
+
     private OkHttpClient createClient() {
-        return new OkHttpClient.Builder()
-            .authenticator((route, response) -> {
-                    String credentials = null;
-
-                    if(this.password != null)
-                        credentials = Credentials.basic(this.userName, this.password);
-                    else if(this.token != null)
-                        credentials = "Bearer " + this.token;
-
-                    if(credentials != null)
-                        return response.request().newBuilder().header("Authorization", credentials).build();
-
-                    return response.request().newBuilder().build();
-            })
-            .build();
+        return new OkHttpClient.Builder().build();
     }
 
 }

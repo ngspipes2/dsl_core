@@ -2,14 +2,13 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.FileBasedToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.JacksonEntityService;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
-import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
@@ -20,7 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-public class LocalToolsRepository extends ToolsRepository {
+public class LocalToolsRepository extends WrapperToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
@@ -112,7 +111,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
     @Override
-    public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
+    protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
         Collection<String> names = IOUtils.getSubDirectoriesName(location);
         Collection<IToolDescriptor> tools = new LinkedList<>();
 
@@ -124,7 +123,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
     @Override
-    public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
+    protected IToolDescriptor getWrapped(String toolName) throws ToolsRepositoryException {
         ToolInfo toolInfo = createToolInfo(toolName);
 
         if(!toolInfo.existsTool)
@@ -148,7 +147,7 @@ public class LocalToolsRepository extends ToolsRepository {
     private IToolDescriptor getToolDescriptor(ToolInfo info) throws IOException, ToolsRepositoryException {
         String content = IOUtils.read(info.toolDescriptorPath);
 
-        IToolDescriptor toolDescriptor = ToolsDescriptorsUtils.createToolDescriptor(content, info.serializationFormat);
+        IToolDescriptor toolDescriptor = FileBasedToolsDescriptorsUtils.createToolDescriptor(content, info.serializationFormat);
 
         return toolDescriptor;
     }
@@ -168,7 +167,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
             String content = IOUtils.read(contextPath);
 
-            IExecutionContextDescriptor context = ToolsDescriptorsUtils.createExecutionContextDescriptor(content, type);
+            IExecutionContextDescriptor context = FileBasedToolsDescriptorsUtils.createExecutionContextDescriptor(content, type);
 
             contexts.add(context);
         }
@@ -178,7 +177,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
     @Override
-    public void update(IToolDescriptor tool) throws ToolsRepositoryException {
+    protected void updateWrapped(IToolDescriptor tool) throws ToolsRepositoryException {
         ToolInfo toolInfo = createToolInfo(tool.getName());
 
         if(!toolInfo.existsTool)
@@ -200,7 +199,7 @@ public class LocalToolsRepository extends ToolsRepository {
     private void updateToolDescriptor(ToolInfo info, IToolDescriptor tool) throws IOException, ToolsRepositoryException {
         FileBasedToolDescriptor fileBasedToolDescriptor = JacksonEntityService.transformToFileBasedToolDescriptor(tool);
 
-        String content = ToolsDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
+        String content = FileBasedToolsDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
 
         IOUtils.write(content, info.toolDescriptorPath);
     }
@@ -218,7 +217,7 @@ public class LocalToolsRepository extends ToolsRepository {
         String content;
         String path;
         for(IExecutionContextDescriptor executionContext : tool.getExecutionContexts()) {
-            content = ToolsDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
+            content = FileBasedToolsDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
             path = info.executionContextsDirectory + SEPARATOR + executionContext.getName() + extension;
 
             IOUtils.write(content, path);
@@ -234,7 +233,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
     @Override
-    public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
+    protected void insertWrapped(IToolDescriptor tool) throws ToolsRepositoryException {
         ToolInfo toolInfo = createToolInfo(tool.getName());
 
         if(toolInfo.existsTool)
@@ -259,7 +258,7 @@ public class LocalToolsRepository extends ToolsRepository {
     private void insertToolDescriptor(ToolInfo info, IToolDescriptor tool) throws IOException, ToolsRepositoryException {
         FileBasedToolDescriptor fileBasedToolDescriptor = JacksonEntityService.transformToFileBasedToolDescriptor(tool);
 
-        String content = ToolsDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
+        String content = FileBasedToolsDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
 
         IOUtils.write(content, info.toolDescriptorPath);
     }
@@ -275,7 +274,7 @@ public class LocalToolsRepository extends ToolsRepository {
         String content;
         String path;
         for(IExecutionContextDescriptor executionContext : tool.getExecutionContexts()) {
-            content = ToolsDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
+            content = FileBasedToolsDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
             path = info.executionContextsDirectory + SEPARATOR + executionContext.getName() + extension;
             IOUtils.write(content, path);
         }

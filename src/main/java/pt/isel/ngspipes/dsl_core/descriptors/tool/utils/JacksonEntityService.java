@@ -1,8 +1,8 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.utils;
 
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedCommandDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedParameterDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.FileBasedToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedCommandDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedParameterDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.ICommandDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IParameterDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
