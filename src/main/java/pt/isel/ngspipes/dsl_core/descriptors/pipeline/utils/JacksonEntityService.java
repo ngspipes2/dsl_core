@@ -539,10 +539,10 @@ public class JacksonEntityService {
             return null;
 
         if(typedInput instanceof TypedSimpleInputDescriptor)
-            return new SimpleInputDescriptor(typedInput.getInputName(), ((ISimpleInputDescriptor) typedInput).getValue());
+            return new SimpleInputDescriptor(typedInput.getInputName(), ((TypedSimpleInputDescriptor) typedInput).getValue());
 
         if(typedInput instanceof TypedParameterInputDescriptor)
-            return new ParameterInputDescriptor(typedInput.getInputName(), ((IParameterInputDescriptor) typedInput).getParameterName());
+            return new ParameterInputDescriptor(typedInput.getInputName(), ((TypedParameterInputDescriptor) typedInput).getParameterName());
 
         if(typedInput instanceof TypedChainInputDescriptor) {
             TypedChainInputDescriptor typedChainInputDescriptor = (TypedChainInputDescriptor)typedInput;
