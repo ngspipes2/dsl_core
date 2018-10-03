@@ -15,6 +15,7 @@ import java.util.Map;
 public class EmptyToolsRepositoryServer {
 
     private Map<String, IToolDescriptor> toolsByName;
+    private byte[] logo;
 
 
 
@@ -23,6 +24,16 @@ public class EmptyToolsRepositoryServer {
     }
 
 
+
+    @RequestMapping(value = "empty/logo", method = RequestMethod.GET)
+    public byte[] getLogo() throws Exception {
+        return logo;
+    }
+
+    @RequestMapping(value = "empty/logo", method = RequestMethod.POST)
+    public void setLogo(@RequestBody(required = false) byte[] logo) throws Exception {
+        this.logo = logo;
+    }
 
     @RequestMapping(value = "empty/tools", method = RequestMethod.GET)
     public Collection<IToolDescriptor> getAll() throws Exception {

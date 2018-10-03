@@ -6,6 +6,10 @@ import utils.ToolsRepositoryException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class GitHubRepositoryTest {
 
@@ -25,6 +29,44 @@ public class GitHubRepositoryTest {
         return config;
     }
 
+
+
+    @Test
+    public void getExistentLogoTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+        ToolsRepositoryTestUtils.getExistentLogoTest(repository);
+    }
+
+    @Test
+    public void getNonExistentLogoTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(EMPTY_LOCATION, getConfig());
+        ToolsRepositoryTestUtils.getNonExistentLogoTest(repository);
+    }
+
+    @Test
+    public void setLogoTest() throws ToolsRepositoryException {
+        /*Can't call ToolsRepositoryTestUtils due to a cache problem when getting file from github*/
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+
+        byte[] logo = new byte[3];
+        new Random().nextBytes(new byte[3]);
+
+        repository.setLogo(logo);
+
+        byte[] receivedLogo = repository.getLogo();
+
+        assertNotNull(receivedLogo);
+        assertEquals(logo.length, receivedLogo.length);
+
+        for(int i=0; i<logo.length; ++i)
+            assertEquals(logo[i], receivedLogo[i]);
+    }
+
+    @Test
+    public void setNullLogoTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+        ToolsRepositoryTestUtils.setNullLogoTest(repository);
+    }
 
 
     @Test

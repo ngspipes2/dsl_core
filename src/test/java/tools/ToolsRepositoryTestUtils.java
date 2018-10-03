@@ -54,6 +54,54 @@ public class ToolsRepositoryTestUtils {
     }
 
 
+    public static void getExistentLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] logo = repository.getLogo();
+
+        assertNotNull(logo);
+        assertNotEquals(0, logo.length);
+    }
+
+    public static void getNonExistentLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] logo = repository.getLogo();
+
+        assertNull(logo);
+    }
+
+    public static void setLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] originalLogo = repository.getLogo();
+
+        try{
+            byte[] logo = new byte[]{1,2,3};
+
+            repository.setLogo(logo);
+
+            byte[] receivedLogo = repository.getLogo();
+
+            assertNotNull(receivedLogo);
+            assertEquals(logo.length, receivedLogo.length);
+
+            for(int i=0; i<logo.length; ++i)
+                assertEquals(logo[i], receivedLogo[i]);
+        } finally {
+            repository.setLogo(originalLogo);
+        }
+    }
+
+    public static void setNullLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] originalLogo = repository.getLogo();
+
+        try{
+            repository.setLogo(null);
+
+            byte[] receivedLogo = repository.getLogo();
+
+            assertNull(receivedLogo);
+        } finally {
+            repository.setLogo(originalLogo);
+        }
+    }
+
+
     public static void insertNonExistentToolTest(IToolsRepository repository) throws ToolsRepositoryException {
         String toolName = null;
 

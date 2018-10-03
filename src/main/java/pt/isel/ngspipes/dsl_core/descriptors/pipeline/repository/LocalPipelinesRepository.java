@@ -101,6 +101,37 @@ public class LocalPipelinesRepository extends WrapperPipelinesRepository {
 
 
     @Override
+    public byte[] getLogo() throws PipelinesRepositoryException {
+        String logoPath = super.location + "/" + LOGO_FILE_NAME;
+
+        try {
+            if(IOUtils.existFile(logoPath))
+                return IOUtils.readBytes(logoPath);
+            else
+                return null;
+        } catch (IOException e) {
+            throw new PipelinesRepositoryException("Error getting logo!", e);
+        }
+    }
+
+    @Override
+    public void setLogo(byte[] logo) throws PipelinesRepositoryException {
+        String logoPath = super.location + "/" + LOGO_FILE_NAME;
+
+        try {
+            if(logo == null) {
+                if(IOUtils.existFile(logoPath))
+                    IOUtils.deleteFile(logoPath);
+            } else {
+                IOUtils.writeBytes(logo, logoPath);
+            }
+        } catch (IOException e) {
+            throw new PipelinesRepositoryException("Error setting logo!", e);
+        }
+    }
+
+
+    @Override
     public Collection<IPipelineDescriptor> getAllWrapped() throws PipelinesRepositoryException {
         Collection<String> names = IOUtils.getSubDirectoriesName(location);
         Collection<IPipelineDescriptor> pipelines = new LinkedList<>();

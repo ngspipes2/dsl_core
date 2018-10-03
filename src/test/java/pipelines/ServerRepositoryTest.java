@@ -37,6 +37,31 @@ public class ServerRepositoryTest {
     }
 
 
+    @Test
+    public void getExistentLogoTest() throws PipelinesRepositoryException {
+        ServerPipelinesRepository repository = new ServerPipelinesRepository(location, new HashMap<>());
+        PipelinesRepositoryTestUtils.getExistentLogoTest(repository);
+    }
+
+    @Test
+    public void getNonExistentLogoTest() throws PipelinesRepositoryException {
+        ServerPipelinesRepository repository = new ServerPipelinesRepository(emptyLocation, new HashMap<>());
+        PipelinesRepositoryTestUtils.getNonExistentLogoTest(repository);
+    }
+
+    @Test
+    public void setLogoTest() throws PipelinesRepositoryException {
+        ServerPipelinesRepository repository = new ServerPipelinesRepository(location, new HashMap<>());
+        PipelinesRepositoryTestUtils.setLogoTest(repository);
+    }
+
+    @Test
+    public void setNullLogoTest() throws PipelinesRepositoryException {
+        ServerPipelinesRepository repository = new ServerPipelinesRepository(location, new HashMap<>());
+        PipelinesRepositoryTestUtils.setNullLogoTest(repository);
+    }
+
+
 
     @Test
     public void insertNonExistentPipelineTest() throws PipelinesRepositoryException {

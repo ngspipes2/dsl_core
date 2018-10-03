@@ -19,6 +19,31 @@ public class LocalRepositoryTest {
 
 
     @Test
+    public void getExistentLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.getExistentLogoTest(repository);
+    }
+
+    @Test
+    public void getNonExistentLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(EMPTY_LOCATION, null);
+        ToolsRepositoryTestUtils.getNonExistentLogoTest(repository);
+    }
+
+    @Test
+    public void setLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.setLogoTest(repository);
+    }
+
+    @Test
+    public void setNullLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.setNullLogoTest(repository);
+    }
+
+
+    @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
         LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
         ToolsRepositoryTestUtils.insertNonExistentToolTest(repository);

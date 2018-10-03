@@ -81,6 +81,67 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
 
 
     @Override
+    public byte[] getLogo() throws PipelinesRepositoryException {
+        try {
+            OkHttpClient client = createClient();
+            Request request = createRequestBuilder()
+                    .url(getLogoUrl())
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return handleGetLogoResponse(response);
+        } catch (IOException e) {
+            throw new PipelinesRepositoryException("Error getting logo!", e);
+        }
+    }
+
+    private byte[] handleGetLogoResponse(Response response) throws IOException {
+        ResponseBody body = response.body();
+
+        if(body == null)
+            return null;
+
+        byte[] logo = body.bytes();
+
+        if(logo.length == 0)
+            return null;
+
+        return logo;
+    }
+
+    @Override
+    public void setLogo(byte[] logo) throws PipelinesRepositoryException {
+        try {
+            RequestBody body = RequestBody.create(null, logo == null ? new byte[0] : logo);
+
+            OkHttpClient client = createClient();
+            Request request = createRequestBuilder()
+                    .url(getLogoUrl())
+                    .post(body)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            handleSetLogoResponse(response);
+        } catch (IOException e) {
+            throw new PipelinesRepositoryException("Error setting logo!", e);
+        }
+    }
+
+    private void handleSetLogoResponse(Response response) throws IOException, PipelinesRepositoryException {
+        if(response.code() != HttpStatus.SC_CREATED && response.code() != HttpStatus.SC_OK) {
+            String message = "Logo could not be set!";
+
+            if(response.body() != null)
+                message += response.body().string();
+
+            throw new PipelinesRepositoryException(message);
+        }
+    }
+
+
+    @Override
     public Collection<IPipelineDescriptor> getAllWrapped() throws PipelinesRepositoryException {
         try {
             OkHttpClient client = createClient();
@@ -249,6 +310,10 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
         }
     }
 
+
+    private String getLogoUrl() {
+        return super.location + "/logo";
+    }
 
     private String getPipelinesUrl() {
         return this.location + "/pipelines";

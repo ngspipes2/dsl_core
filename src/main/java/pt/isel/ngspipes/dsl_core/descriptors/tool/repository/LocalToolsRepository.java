@@ -110,6 +110,38 @@ public class LocalToolsRepository extends WrapperToolsRepository {
     }
 
 
+
+    @Override
+    public byte[] getLogo() throws ToolsRepositoryException {
+        String logoPath = super.location + "/" + LOGO_FILE_NAME;
+
+        try {
+            if(IOUtils.existFile(logoPath))
+                return IOUtils.readBytes(logoPath);
+            else
+                return null;
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error getting logo!", e);
+        }
+    }
+
+    @Override
+    public void setLogo(byte[] logo) throws ToolsRepositoryException {
+        String logoPath = super.location + "/" + LOGO_FILE_NAME;
+
+        try {
+            if(logo == null) {
+                if(IOUtils.existFile(logoPath))
+                    IOUtils.deleteFile(logoPath);
+            } else {
+                IOUtils.writeBytes(logo, logoPath);
+            }
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error setting logo!", e);
+        }
+    }
+
+
     @Override
     protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
         Collection<String> names = IOUtils.getSubDirectoriesName(location);

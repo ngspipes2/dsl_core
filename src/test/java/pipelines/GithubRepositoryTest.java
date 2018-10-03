@@ -8,6 +8,10 @@ import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class GithubRepositoryTest {
 
@@ -27,6 +31,43 @@ public class GithubRepositoryTest {
         return config;
     }
 
+
+    @Test
+    public void getExistentLogoTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.getExistentLogoTest(repository);
+    }
+
+    @Test
+    public void getNonExistentLogoTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(EMPTY_LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.getNonExistentLogoTest(repository);
+    }
+
+    @Test
+    public void setLogoTest() throws PipelinesRepositoryException {
+        /*Can't call ToolsRepositoryTestUtils due to a cache problem when getting file from github*/
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+
+        byte[] logo = new byte[3];
+        new Random().nextBytes(new byte[3]);
+
+        repository.setLogo(logo);
+
+        byte[] receivedLogo = repository.getLogo();
+
+        assertNotNull(receivedLogo);
+        assertEquals(logo.length, receivedLogo.length);
+
+        for(int i=0; i<logo.length; ++i)
+            assertEquals(logo[i], receivedLogo[i]);
+    }
+
+    @Test
+    public void setNullLogoTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.setNullLogoTest(repository);
+    }
 
 
     @Test

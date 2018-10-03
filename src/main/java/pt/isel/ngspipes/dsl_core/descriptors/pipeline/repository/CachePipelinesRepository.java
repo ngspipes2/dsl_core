@@ -10,9 +10,10 @@ import java.util.Map;
 
 public class CachePipelinesRepository implements IPipelinesRepository {
 
+    private final Object lock;
     private final IPipelinesRepository source;
     private final Map<String, IPipelineDescriptor> cache;
-    private final Object lock;
+    private byte[] logo;
 
 
 
@@ -32,6 +33,20 @@ public class CachePipelinesRepository implements IPipelinesRepository {
     @Override
     public Map<String, Object> getConfig() throws PipelinesRepositoryException {
         return source.getConfig();
+    }
+
+    @Override
+    public byte[] getLogo() throws PipelinesRepositoryException{
+        if(logo == null)
+            logo = source.getLogo();
+
+        return logo;
+    }
+
+    @Override
+    public void setLogo(byte[] logo) throws PipelinesRepositoryException {
+        source.setLogo(logo);
+        this.logo = logo;
     }
 
     @Override

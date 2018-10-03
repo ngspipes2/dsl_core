@@ -14,6 +14,7 @@ import java.util.Map;
 public class EmptyPipelinesRepositoryServer {
 
     private Map<String, TypedPipelineDescriptor> pipelinesByName;
+    private byte[] logo;
 
 
 
@@ -22,6 +23,16 @@ public class EmptyPipelinesRepositoryServer {
     }
 
 
+
+    @RequestMapping(value = "empty/logo", method = RequestMethod.GET)
+    public byte[] getLogo() throws Exception {
+        return logo;
+    }
+
+    @RequestMapping(value = "empty/logo", method = RequestMethod.POST)
+    public void setLogo(@RequestBody(required = false) byte[] logo) throws Exception {
+        this.logo = logo;
+    }
 
     @RequestMapping(value = "empty/pipelines", method = RequestMethod.GET)
     public Collection<TypedPipelineDescriptor> getAll() throws Exception {

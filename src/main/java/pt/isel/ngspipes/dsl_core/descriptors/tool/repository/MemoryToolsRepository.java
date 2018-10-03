@@ -12,6 +12,7 @@ public class MemoryToolsRepository implements IToolsRepository {
 
     private final Object lock = new Object();
     private Map<String, IToolDescriptor> toolsByName = new HashMap<>();
+    private byte[] logo;
 
 
 
@@ -23,6 +24,16 @@ public class MemoryToolsRepository implements IToolsRepository {
     @Override
     public Map<String, Object> getConfig() throws ToolsRepositoryException {
         return null;
+    }
+
+    @Override
+    public byte[] getLogo() {
+        return this.logo;
+    }
+
+    @Override
+    public void setLogo(byte[] logo) {
+        this.logo = logo;
     }
 
     @Override

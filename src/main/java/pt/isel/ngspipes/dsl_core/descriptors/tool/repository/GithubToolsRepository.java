@@ -146,7 +146,40 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
 
 
 
-    // IMPLEMENTATION OF ToolsRepository
+    @Override
+    public byte[] getLogo() throws ToolsRepositoryException {
+        init();
+
+        try {
+            if(!GithubAPI.existsFile(repository, LOGO_FILE_NAME))
+                return null;
+
+            return GithubAPI.getFileBytes(repository, LOGO_FILE_NAME);
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error getting logo!", e);
+        }
+    }
+
+    @Override
+    public void setLogo(byte[] logo) throws ToolsRepositoryException {
+        init();
+
+        try {
+            if(logo == null) {
+                if(GithubAPI.existsFile(repository, LOGO_FILE_NAME))
+                    GithubAPI.deleteFile(repository, "/", LOGO_FILE_NAME);
+            } else {
+                if(!GithubAPI.existsFile(repository, LOGO_FILE_NAME))
+                    GithubAPI.createFile(repository, LOGO_FILE_NAME, logo);
+                else
+                    GithubAPI.updateFile(repository, LOGO_FILE_NAME, logo);
+            }
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error setting logo!", e);
+        }
+    }
+
+
     @Override
     protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
         init();

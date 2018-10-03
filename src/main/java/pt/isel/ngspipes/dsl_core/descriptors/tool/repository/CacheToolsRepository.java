@@ -10,9 +10,12 @@ import java.util.Map;
 
 public class CacheToolsRepository implements IToolsRepository {
 
+    private final Object lock;
     private final IToolsRepository source;
     private final Map<String, IToolDescriptor> cache;
-    private final Object lock;
+    private byte[] logo;
+
+
 
     public CacheToolsRepository(IToolsRepository source) {
         this.source = source;
@@ -29,6 +32,20 @@ public class CacheToolsRepository implements IToolsRepository {
     @Override
     public Map<String, Object> getConfig() throws ToolsRepositoryException {
         return source.getConfig();
+    }
+
+    @Override
+    public byte[] getLogo() throws ToolsRepositoryException {
+        if(logo == null)
+            logo = source.getLogo();
+
+        return logo;
+    }
+
+    @Override
+    public void setLogo(byte[] logo) throws ToolsRepositoryException {
+        source.setLogo(logo);
+        this.logo = logo;
     }
 
     @Override

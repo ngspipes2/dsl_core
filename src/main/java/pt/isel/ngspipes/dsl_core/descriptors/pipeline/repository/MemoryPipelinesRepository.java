@@ -12,6 +12,7 @@ public class MemoryPipelinesRepository implements IPipelinesRepository {
 
     private final Object lock = new Object();
     private Map<String, IPipelineDescriptor> pipelinesByName = new HashMap<>();
+    private byte[] logo;
 
 
 
@@ -24,6 +25,18 @@ public class MemoryPipelinesRepository implements IPipelinesRepository {
     public Map<String, Object> getConfig() throws PipelinesRepositoryException {
         return null;
     }
+
+
+    @Override
+    public byte[] getLogo() {
+        return logo;
+    }
+
+    @Override
+    public void setLogo(byte[] logo) {
+        this.logo = logo;
+    }
+
 
     @Override
     public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {

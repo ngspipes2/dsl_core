@@ -18,6 +18,31 @@ public class LocalRepositoryTest {
     }
 
 
+    
+    @Test
+    public void getExistentLogoTest() throws PipelinesRepositoryException {
+        LocalPipelinesRepository repository = new LocalPipelinesRepository(LOCATION, null);
+        PipelinesRepositoryTestUtils.getExistentLogoTest(repository);
+    }
+
+    @Test
+    public void getNonExistentLogoTest() throws PipelinesRepositoryException {
+        LocalPipelinesRepository repository = new LocalPipelinesRepository(EMPTY_LOCATION, null);
+        PipelinesRepositoryTestUtils.getNonExistentLogoTest(repository);
+    }
+
+    @Test
+    public void setLogoTest() throws PipelinesRepositoryException {
+        LocalPipelinesRepository repository = new LocalPipelinesRepository(LOCATION, null);
+        PipelinesRepositoryTestUtils.setLogoTest(repository);
+    }
+
+    @Test
+    public void setNullLogoTest() throws PipelinesRepositoryException {
+        LocalPipelinesRepository repository = new LocalPipelinesRepository(LOCATION, null);
+        PipelinesRepositoryTestUtils.setNullLogoTest(repository);
+    }
+
 
     @Test
     public void insertNonExistentPipelineTest() throws PipelinesRepositoryException {

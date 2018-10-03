@@ -52,9 +52,13 @@ public class GithubAPI {
         if(!existsFolder(repository, path))
             return false;
 
-        return repository.getDirectoryContent(path)
-                .stream()
-                .anyMatch(content -> content.isFile() && content.getName().equals(name));
+        try {
+            return repository.getDirectoryContent(path)
+                    .stream()
+                    .anyMatch(content -> content.isFile() && content.getName().equals(name));
+        } catch (FileNotFoundException e) {
+            return false;
+        }
     }
 
     public static boolean existsFolder(GHRepository repository, String name) throws IOException {
@@ -63,6 +67,9 @@ public class GithubAPI {
 
     public static boolean existsFolder(GHRepository repository, String path, String name) throws IOException {
         if(path.equals("") && name.equals(""))
+            return true;
+
+        if(path.equals("/") && name.equals(""))
             return true;
 
         try {

@@ -37,6 +37,30 @@ public class ServerRepositoryTest {
     }
 
 
+    @Test
+    public void getExistentLogoTest() throws ToolsRepositoryException {
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
+        ToolsRepositoryTestUtils.getExistentLogoTest(repository);
+    }
+
+    @Test
+    public void getNonExistentLogoTest() throws ToolsRepositoryException {
+        ServerToolsRepository repository = new ServerToolsRepository(emptyLocation, new HashMap<>());
+        ToolsRepositoryTestUtils.getNonExistentLogoTest(repository);
+    }
+
+    @Test
+    public void setLogoTest() throws ToolsRepositoryException {
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
+        ToolsRepositoryTestUtils.setLogoTest(repository);
+    }
+
+    @Test
+    public void setNullLogoTest() throws ToolsRepositoryException {
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
+        ToolsRepositoryTestUtils.setNullLogoTest(repository);
+    }
+
 
     @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
