@@ -30,7 +30,7 @@ public class PipelinesDescriptorUtils {
         try {
             JavaType klass = new ObjectMapper().getTypeFactory().constructType(TypedPipelineDescriptor.class);
             TypedPipelineDescriptor typedPipeline = Serialization.deserialize(content, format, klass);
-            return JacksonEntityService.transformToIPipelineDescriptor(typedPipeline);
+            return TypedPipelineMapper.transformToIPipelineDescriptor(typedPipeline);
         } catch (DSLCoreException e) {
             throw new PipelinesRepositoryException("Error deserialize TypedPipelineDescriptor!", e);
         }
@@ -53,7 +53,7 @@ public class PipelinesDescriptorUtils {
 
     public static String getPipelineDescriptorAsString(TypedPipelineDescriptor typedPipelineDescriptor, PipelineSerialization.Format format) throws PipelinesRepositoryException {
         if(format.equals(PipelineSerialization.Format.PIPES)) {
-            IPipelineDescriptor pipeline = JacksonEntityService.transformToIPipelineDescriptor(typedPipelineDescriptor);
+            IPipelineDescriptor pipeline = TypedPipelineMapper.transformToIPipelineDescriptor(typedPipelineDescriptor);
 
             try {
                 NGSPipesParser parser = new NGSPipesParser();
@@ -68,7 +68,7 @@ public class PipelinesDescriptorUtils {
     }
 
     public static String getPipelineDescriptorAsString(IPipelineDescriptor pipeline, Serialization.Format format) throws PipelinesRepositoryException {
-        TypedPipelineDescriptor typedPipeline = JacksonEntityService.transformToTypedPipelineDescriptor(pipeline);
+        TypedPipelineDescriptor typedPipeline = TypedPipelineMapper.transformToTypedPipelineDescriptor(pipeline);
         return getPipelineDescriptorAsString(typedPipeline, format);
     }
 

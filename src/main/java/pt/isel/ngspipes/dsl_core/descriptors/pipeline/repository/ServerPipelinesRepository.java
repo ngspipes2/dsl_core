@@ -6,7 +6,7 @@ import okhttp3.*;
 import org.apache.http.HttpStatus;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jackson_entities.typed.TypedPipelineDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.JacksonEntityService;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.TypedPipelineMapper;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelinesDescriptorUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
@@ -177,7 +177,7 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
         JavaType klass = new ObjectMapper().getTypeFactory().constructCollectionType(List.class, TypedPipelineDescriptor.class);
         Collection<TypedPipelineDescriptor> typedPipelines = Serialization.deserialize(content, format, klass);
 
-        return JacksonEntityService.transformToIPipelineDescriptor(typedPipelines);
+        return TypedPipelineMapper.transformToIPipelineDescriptor(typedPipelines);
     }
 
 

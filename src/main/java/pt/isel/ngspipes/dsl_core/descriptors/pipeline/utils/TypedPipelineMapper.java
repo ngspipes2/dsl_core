@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class JacksonEntityService {
+public class TypedPipelineMapper {
 
     public static Collection<TypedPipelineDescriptor> transformToTypedPipelineDescriptor(Collection<IPipelineDescriptor> pipelines) throws PipelinesRepositoryException {
         if(pipelines == null)

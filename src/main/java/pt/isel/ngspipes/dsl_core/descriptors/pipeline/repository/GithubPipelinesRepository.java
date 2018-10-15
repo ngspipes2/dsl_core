@@ -5,7 +5,7 @@ import org.kohsuke.github.GitHub;
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jackson_entities.fileBased.FileBasedPipelineDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.JacksonEntityService;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.TypedPipelineMapper;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelineSerialization;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelinesDescriptorUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.GithubAPI;
@@ -244,7 +244,7 @@ public class GithubPipelinesRepository extends WrapperPipelinesRepository {
     }
 
     private void updatePipelineDescriptor(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException, PipelinesRepositoryException {
-        FileBasedPipelineDescriptor fileBasedPipeline = JacksonEntityService.transformToFileBasedPipelineDescriptor(pipeline);
+        FileBasedPipelineDescriptor fileBasedPipeline = TypedPipelineMapper.transformToFileBasedPipelineDescriptor(pipeline);
 
         String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
 
@@ -286,7 +286,7 @@ public class GithubPipelinesRepository extends WrapperPipelinesRepository {
     }
 
     private void insertPipelineDescriptor(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException, PipelinesRepositoryException {
-        FileBasedPipelineDescriptor fileBasedPipeline = JacksonEntityService.transformToFileBasedPipelineDescriptor(pipeline);
+        FileBasedPipelineDescriptor fileBasedPipeline = TypedPipelineMapper.transformToFileBasedPipelineDescriptor(pipeline);
 
         String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
 
