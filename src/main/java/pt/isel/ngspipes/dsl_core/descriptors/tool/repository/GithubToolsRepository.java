@@ -4,9 +4,8 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.fileBased.FileBasedToolDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.FileBasedToolsDescriptorsUtils;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.JacksonEntityService;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jacksonEntities.fileBased.FileBasedToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.FileBasedToolDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.GithubAPI;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
@@ -221,7 +220,7 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
     private IToolDescriptor getToolDescriptor(ToolInfo info) throws IOException, ToolsRepositoryException {
         String content = GithubAPI.getFileContent(repository, info.toolDescriptorPath);
 
-        IToolDescriptor toolDescriptor = FileBasedToolsDescriptorsUtils.createToolDescriptor(content, info.serializationFormat);
+        IToolDescriptor toolDescriptor = FileBasedToolDescriptorsUtils.createToolDescriptor(content, info.serializationFormat);
 
         return toolDescriptor;
     }
@@ -241,7 +240,7 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
 
             String content = GithubAPI.getFileContent(repository, contextPath);
 
-            IExecutionContextDescriptor context = FileBasedToolsDescriptorsUtils.createExecutionContextDescriptor(content, type);
+            IExecutionContextDescriptor context = FileBasedToolDescriptorsUtils.createExecutionContextDescriptor(content, type);
 
             contexts.add(context);
         }
@@ -273,9 +272,9 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
     }
 
     private void updateToolDescriptor(ToolInfo info, IToolDescriptor tool) throws IOException, ToolsRepositoryException {
-        FileBasedToolDescriptor fileBasedToolDescriptor = JacksonEntityService.transformToFileBasedToolDescriptor(tool);
+        FileBasedToolDescriptor fileBasedToolDescriptor = new FileBasedToolDescriptor(tool);
 
-        String content = FileBasedToolsDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
+        String content = FileBasedToolDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
 
         GithubAPI.updateFile(repository, info.toolDescriptorPath, content);
     }
@@ -298,7 +297,7 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
         String content;
         String path;
         for(IExecutionContextDescriptor executionContext : tool.getExecutionContexts()) {
-            content = FileBasedToolsDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
+            content = FileBasedToolDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
             path = info.executionContextsDirectory + SEPARATOR + executionContext.getName() + extension;
 
             if(info.executionContextsNames.stream().anyMatch(ec -> ec.startsWith(executionContext.getName()+".")))
@@ -339,9 +338,9 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
     }
 
     private void insertToolDescriptor(ToolInfo info, IToolDescriptor tool) throws IOException, ToolsRepositoryException {
-        FileBasedToolDescriptor fileBasedToolDescriptor = JacksonEntityService.transformToFileBasedToolDescriptor(tool);
+        FileBasedToolDescriptor fileBasedToolDescriptor = new FileBasedToolDescriptor(tool);
 
-        String content = FileBasedToolsDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
+        String content = FileBasedToolDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
 
         GithubAPI.createFile(repository, info.toolDescriptorPath, content);
     }
@@ -357,7 +356,7 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
         String content;
         String path;
         for(IExecutionContextDescriptor executionContext : tool.getExecutionContexts()) {
-            content = FileBasedToolsDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
+            content = FileBasedToolDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
             path = info.executionContextsDirectory + SEPARATOR + executionContext.getName() + extension;
             GithubAPI.createFile(repository, path, content);
         }

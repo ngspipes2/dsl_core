@@ -2,10 +2,9 @@ package pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository;
 
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jackson_entities.fileBased.FileBasedPipelineDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.TypedPipelineMapper;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jacksonEntities.fileBased.FileBasedPipelineDescriptor;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelineSerialization;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelinesDescriptorUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.FileBasedPipelineDescriptorUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
@@ -167,7 +166,7 @@ public class LocalPipelinesRepository extends WrapperPipelinesRepository {
     private IPipelineDescriptor getPipelineDescriptor(PipelineInfo info) throws IOException, PipelinesRepositoryException {
         String content = IOUtils.read(info.pipelineDescriptorPath);
 
-        IPipelineDescriptor pipelineDescriptor = PipelinesDescriptorUtils.createPipelineDescriptor(content, info.serializationFormat);
+        IPipelineDescriptor pipelineDescriptor = FileBasedPipelineDescriptorUtils.createPipelineDescriptor(content, info.serializationFormat);
         pipelineDescriptor.setName(info.pipelineName);
 
         return pipelineDescriptor;
@@ -201,9 +200,9 @@ public class LocalPipelinesRepository extends WrapperPipelinesRepository {
     }
 
     private void updatePipelineDescriptor(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException, PipelinesRepositoryException {
-        FileBasedPipelineDescriptor fileBasedPipeline = TypedPipelineMapper.transformToFileBasedPipelineDescriptor(pipeline);
+        FileBasedPipelineDescriptor fileBasedPipeline = new FileBasedPipelineDescriptor(pipeline);
 
-        String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
+        String content = FileBasedPipelineDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
 
         IOUtils.write(content, info.pipelineDescriptorPath);
     }
@@ -237,9 +236,9 @@ public class LocalPipelinesRepository extends WrapperPipelinesRepository {
     }
 
     private void insertPipelineDescriptor(PipelineInfo info, IPipelineDescriptor pipeline) throws IOException, PipelinesRepositoryException {
-        FileBasedPipelineDescriptor fileBasedPipeline = TypedPipelineMapper.transformToFileBasedPipelineDescriptor(pipeline);
+        FileBasedPipelineDescriptor fileBasedPipeline = new FileBasedPipelineDescriptor(pipeline);
 
-        String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
+        String content = FileBasedPipelineDescriptorUtils.getPipelineDescriptorAsString(fileBasedPipeline, info.serializationFormat);
 
         IOUtils.write(content, info.pipelineDescriptorPath);
     }

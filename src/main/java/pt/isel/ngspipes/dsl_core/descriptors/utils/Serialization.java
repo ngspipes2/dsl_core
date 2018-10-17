@@ -1,11 +1,13 @@
 package pt.isel.ngspipes.dsl_core.descriptors.utils;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 
 import java.io.IOException;
@@ -13,8 +15,18 @@ import java.io.IOException;
 public class Serialization {
 
     public enum Format {
-        JSON,
-        YAML
+        JSON(new JsonFactory()),
+        YAML(new YAMLFactory());
+
+
+
+        private JsonFactory factory;
+        public JsonFactory getFactory() { return this.factory; }
+
+
+
+        Format(JsonFactory factory) { this.factory = factory; }
+
     }
 
 
@@ -32,13 +44,9 @@ public class Serialization {
     }
 
     public static String serialize(Object obj, Class<?> klass, Format format, SimpleAbstractTypeResolver resolver) throws DSLCoreException {
-        if(format.equals(Format.JSON))
-            return serialize(obj, klass, JacksonUtils.getJSONMapper(resolver));
-
-        if(format.equals(Format.YAML))
-            return serialize(obj, klass, JacksonUtils.getYAMLMapper(resolver));
-
-        throw new DSLCoreException("Unknown Format:" + format);
+        JsonFactory factory = format.getFactory();
+        ObjectMapper mapper = JacksonUtils.getObjectMapper(factory, resolver);
+        return serialize(obj, klass, mapper);
     }
 
     public static String serialize(Object obj, ObjectMapper mapper) throws DSLCoreException {
@@ -63,13 +71,9 @@ public class Serialization {
     }
 
     public static <T> T deserialize(String content, Format format, JavaType klass, SimpleAbstractTypeResolver resolver) throws DSLCoreException {
-        if(format.equals(Format.JSON))
-            return deserialize(content, klass, JacksonUtils.getJSONMapper(resolver));
-
-        if(format.equals(Format.YAML))
-            return deserialize(content, klass, JacksonUtils.getYAMLMapper(resolver));
-
-        throw new DSLCoreException("Unknown Format:" + format);
+        JsonFactory factory = format.getFactory();
+        ObjectMapper mapper = JacksonUtils.getObjectMapper(factory, resolver);
+        return deserialize(content, klass, mapper);
     }
 
     public static <T> T deserialize(String content, JavaType klass, ObjectMapper mapper) throws DSLCoreException {

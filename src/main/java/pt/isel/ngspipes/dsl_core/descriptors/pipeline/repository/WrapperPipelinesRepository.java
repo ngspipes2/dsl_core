@@ -1,6 +1,6 @@
 package pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository;
 
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jackson_entities.wrapper.WrapperPipelineDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jacksonEntities.wrapper.WrapperPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepository;
 import pt.isel.ngspipes.pipeline_repository.PipelinesRepositoryException;

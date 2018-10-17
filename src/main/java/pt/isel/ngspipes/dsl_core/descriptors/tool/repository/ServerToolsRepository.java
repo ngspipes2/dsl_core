@@ -2,14 +2,13 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import okhttp3.*;
 import org.apache.http.HttpStatus;
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.ToolMapper;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
-import pt.isel.ngspipes.tool_descriptor.implementations.*;
-import pt.isel.ngspipes.tool_descriptor.interfaces.*;
+import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
@@ -62,8 +61,6 @@ public class ServerToolsRepository extends WrapperToolsRepository {
     private String password;
     private String token;
     private Serialization.Format serializationFormat;
-    private SimpleAbstractTypeResolver resolver;
-    private JavaType klass;
 
 
 
@@ -75,27 +72,9 @@ public class ServerToolsRepository extends WrapperToolsRepository {
         super(location, config);
 
         this.serializationFormat = serializationFormat;
-        this.resolver = getResolver();
-        this.klass = getKlass();
         this.userName = (String)config.get(USER_NAME_CONFIG_KEY);
         this.password = (String)config.get(PASSWORD_CONFIG_KEY);
         this.token = (String)config.get(ACCESS_TOKEN_CONFIG_KEY);
-    }
-
-    private SimpleAbstractTypeResolver getResolver() {
-        SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
-
-        resolver.addMapping(IToolDescriptor.class, ToolDescriptor.class);
-        resolver.addMapping(ICommandDescriptor.class, CommandDescriptor.class);
-        resolver.addMapping(IParameterDescriptor.class, ParameterDescriptor.class);
-        resolver.addMapping(IOutputDescriptor.class, OutputDescriptor.class);
-        resolver.addMapping(IExecutionContextDescriptor.class, ExecutionContextDescriptor.class);
-
-        return resolver;
-    }
-
-    private JavaType getKlass() {
-        return new ObjectMapper().getTypeFactory().constructType(ToolDescriptor.class);
     }
 
 
@@ -194,9 +173,9 @@ public class ServerToolsRepository extends WrapperToolsRepository {
         String httpHeader = response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
-        JavaType klass = new ObjectMapper().getTypeFactory().constructCollectionType(List.class, ToolDescriptor.class);
-
-        return Serialization.deserialize(content, format, klass, resolver);
+        ObjectMapper mapper = ToolMapper.getToolsMapper(format.getFactory());
+        JavaType klass = mapper.getTypeFactory().constructCollectionType(List.class, IToolDescriptor.class);
+        return Serialization.deserialize(content, klass, mapper);
     }
 
 
@@ -233,7 +212,9 @@ public class ServerToolsRepository extends WrapperToolsRepository {
         String httpHeader = response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
-        return Serialization.deserialize(content, format, klass, resolver);
+        ObjectMapper mapper = ToolMapper.getToolsMapper(format.getFactory());
+        JavaType klass = mapper.constructType(IToolDescriptor.class);
+        return Serialization.deserialize(content, klass, mapper);
     }
 
 

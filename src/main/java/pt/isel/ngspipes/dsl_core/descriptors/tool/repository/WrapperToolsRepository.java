@@ -1,6 +1,6 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
-import pt.isel.ngspipes.dsl_core.descriptors.tool.jackson_entities.wrapper.WrapperToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jacksonEntities.wrapper.WrapperToolDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
 import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import utils.ToolsRepositoryException;

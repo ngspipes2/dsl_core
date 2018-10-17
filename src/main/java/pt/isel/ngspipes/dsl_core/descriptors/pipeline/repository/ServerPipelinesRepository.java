@@ -5,9 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.apache.http.HttpStatus;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jackson_entities.typed.TypedPipelineDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.TypedPipelineMapper;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelinesDescriptorUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.PipelineMapper;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.FileBasedPipelineDescriptorUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
 import pt.isel.ngspipes.pipeline_repository.IPipelinesRepository;
@@ -174,10 +173,9 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
         String httpHeader =  response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
-        JavaType klass = new ObjectMapper().getTypeFactory().constructCollectionType(List.class, TypedPipelineDescriptor.class);
-        Collection<TypedPipelineDescriptor> typedPipelines = Serialization.deserialize(content, format, klass);
-
-        return TypedPipelineMapper.transformToIPipelineDescriptor(typedPipelines);
+        ObjectMapper mapper = PipelineMapper.getPipelinesMapper(format.getFactory());
+        JavaType klass = mapper.getTypeFactory().constructCollectionType(List.class, IPipelineDescriptor.class);
+        return Serialization.deserialize(content, klass, mapper);
     }
 
 
@@ -214,14 +212,16 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
         String httpHeader =  response.header("Content-Type");
         Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
 
-        return PipelinesDescriptorUtils.createPipelineDescriptor(content, format);
+        ObjectMapper mapper = PipelineMapper.getPipelinesMapper(format.getFactory());
+        JavaType klass = mapper.constructType(IPipelineDescriptor.class);
+        return Serialization.deserialize(content, klass, mapper);
     }
 
 
     @Override
     public void updateWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         try {
-            String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
+            String content = FileBasedPipelineDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
             RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
 
             OkHttpClient client = createClient();
@@ -253,7 +253,7 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
     @Override
     public void insertWrapped(IPipelineDescriptor pipeline) throws PipelinesRepositoryException {
         try {
-            String content = PipelinesDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
+            String content = FileBasedPipelineDescriptorUtils.getPipelineDescriptorAsString(pipeline, serializationFormat);
             RequestBody body = RequestBody.create(MediaType.get(getContentTypeHeader()), content);
 
             OkHttpClient client = createClient();
