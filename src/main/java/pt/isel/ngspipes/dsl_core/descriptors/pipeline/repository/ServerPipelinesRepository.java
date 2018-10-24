@@ -46,7 +46,7 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
 
             Response response = client.newCall(request).execute();
 
-            return response.header("Allow") != null || response.header("Allow").contains("GET");
+            return response.header("Allow") != null && response.header("Allow").contains("GET");
         } catch (IllegalArgumentException | IOException e) {
             if(e instanceof MalformedURLException)
                 return false;

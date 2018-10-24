@@ -24,18 +24,24 @@ public class GithubAPI {
         return GitHub.connectAnonymously();
     }
 
-    public static GHRepository getGHRepository(GitHub github, String repositoryName) throws IOException {
-        if(existsRepository(github, repositoryName))
+    public static GHRepository getGHRepository(GitHub github, String repositoryUri) throws IOException {
+        String[] tokens = repositoryUri.split("/");
+        String repositoryName = tokens[tokens.length-2] + "/" + tokens[tokens.length-1];
+
+        if(existsRepository(github, repositoryUri))
             return github.getRepository(repositoryName);
         else
             return null;
     }
 
 
-    public static boolean existsRepository(GitHub github, String repositoryName) throws IOException {
+    public static boolean existsRepository(GitHub github, String repositoryUri) throws IOException {
         try {
-            if(!repositoryName.contains("/"))
+            if(!repositoryUri.contains("/") || !repositoryUri.startsWith("https://github.com"))
                 return false;
+
+            String[] tokens = repositoryUri.split("/");
+            String repositoryName = tokens[tokens.length-2] + "/" + tokens[tokens.length-1];
 
             github.getRepository(repositoryName);
             return true;

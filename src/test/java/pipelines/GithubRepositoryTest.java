@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class GithubRepositoryTest {
 
-    private static final String LOCATION = "ngspipes2/pipelines_support";
-    private static final String EMPTY_LOCATION = "ngspipes2/empty_repository";
+    private static final String LOCATION = "https://github.com/ngspipes2/pipelines_support";
+    private static final String EMPTY_LOCATION = "https://github.com/ngspipes2/empty_repository";
     private static final String ACCESS_TOKEN = null;
     private static final String USER_NAME = "NGSPipesShare";
 
