@@ -44,6 +44,11 @@ public class NotEmptyPipelinesRepositoryServer {
         this.logo = logo;
     }
 
+    @RequestMapping(value = "notempty/names", method = RequestMethod.GET)
+    public Collection<String> getNames() throws Exception {
+        return pipelinesByName.keySet();
+    }
+
     @RequestMapping(value = "notempty/pipelines", method = RequestMethod.GET)
     public Collection<IPipelineDescriptor> getAll() throws Exception {
         return pipelinesByName.values();

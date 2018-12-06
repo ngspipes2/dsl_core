@@ -39,6 +39,12 @@ public class MemoryPipelinesRepository implements IPipelinesRepository {
 
 
     @Override
+    public Collection<String> getPipelinesNames() throws PipelinesRepositoryException {
+        return pipelinesByName.keySet();
+    }
+
+
+    @Override
     public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
         synchronized (lock) {
             return pipelinesByName.values();

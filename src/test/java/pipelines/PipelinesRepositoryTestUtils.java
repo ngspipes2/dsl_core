@@ -155,6 +155,24 @@ public class PipelinesRepositoryTestUtils {
     }
 
 
+    public static void getPipelinesNamesWithNonEmptyResultTest(IPipelinesRepository repository, String... expectedNames) throws PipelinesRepositoryException {
+        Collection<String> names = repository.getPipelinesNames();
+
+        assertNotNull(names);
+        assertEquals(expectedNames.length, names.size());
+
+        for(String pipelineName : expectedNames)
+            assertTrue(names.contains(pipelineName));
+    }
+
+    public static void getPipelinesNamesWithEmptyResultTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
+        Collection<String> names = repository.getPipelinesNames();
+
+        assertNotNull(names);
+        assertEquals(0, names.size());
+    }
+
+
     public static void insertNonExistentPipelineTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
         String pipelineName = null;
 

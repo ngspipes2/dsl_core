@@ -44,6 +44,19 @@ public class LocalRepositoryTest {
 
 
     @Test
+    public void getToolsNamesWithEmptyResultTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(EMPTY_LOCATION, null);
+        ToolsRepositoryTestUtils.getToolsNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getToolsNamesWithNonEmptyResult() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.getToolsNamesWithNonEmptyResultTest(repository, "Blast", "Velvet", "Trimmomatic");
+    }
+
+
+    @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
         LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
         ToolsRepositoryTestUtils.insertNonExistentToolTest(repository);

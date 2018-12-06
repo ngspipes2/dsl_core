@@ -142,6 +142,12 @@ public class LocalToolsRepository extends WrapperToolsRepository {
 
 
     @Override
+    public Collection<String> getToolsNames() throws ToolsRepositoryException {
+        return IOUtils.getSubDirectoriesName(location);
+    }
+
+
+    @Override
     protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
         Collection<String> names = IOUtils.getSubDirectoriesName(location);
         Collection<IToolDescriptor> tools = new LinkedList<>();

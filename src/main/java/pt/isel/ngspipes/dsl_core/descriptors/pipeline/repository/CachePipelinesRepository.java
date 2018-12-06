@@ -50,6 +50,13 @@ public class CachePipelinesRepository implements IPipelinesRepository {
     }
 
     @Override
+    public Collection<String> getPipelinesNames() throws PipelinesRepositoryException {
+        synchronized (lock) {
+            return source.getPipelinesNames();
+        }
+    }
+
+    @Override
     public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
         synchronized (lock) {
             Collection<IPipelineDescriptor> pipelinesDescriptors = source.getAll();

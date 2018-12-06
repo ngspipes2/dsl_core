@@ -48,7 +48,19 @@ public class MemoryRepositoryTest {
     public void setNullLogoTest() throws PipelinesRepositoryException {
         PipelinesRepositoryTestUtils.setNullLogoTest(REPOSITORY);
     }
-    
+
+
+    @Test
+    public void getPipelinesNamesWithEmptyResultTest() throws PipelinesRepositoryException {
+        MemoryPipelinesRepository repository = new MemoryPipelinesRepository();
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getPipelinesNamesWithNonEmptyResult() throws PipelinesRepositoryException {
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithNonEmptyResultTest(REPOSITORY, "Pipeline 1", "Pipeline 2");
+    }
+
 
     @Test
     public void insertNonExistentPipelineTest() throws PipelinesRepositoryException {

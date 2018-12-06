@@ -63,6 +63,19 @@ public class ServerRepositoryTest {
 
 
     @Test
+    public void getToolsNamesWithEmptyResultTest() throws ToolsRepositoryException {
+        ServerToolsRepository repository = new ServerToolsRepository(emptyLocation, new HashMap<>());
+        ToolsRepositoryTestUtils.getToolsNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getToolsNamesWithNonEmptyResult() throws ToolsRepositoryException {
+        ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
+        ToolsRepositoryTestUtils.getToolsNamesWithNonEmptyResultTest(repository, "Blast", "Velvet", "Trimmomatic");
+    }
+
+
+    @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
         ServerToolsRepository repository = new ServerToolsRepository(location, new HashMap<>());
         ToolsRepositoryTestUtils.insertNonExistentToolTest(repository);

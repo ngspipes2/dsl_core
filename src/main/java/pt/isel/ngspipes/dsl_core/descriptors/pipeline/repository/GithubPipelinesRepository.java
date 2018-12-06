@@ -5,8 +5,8 @@ import org.kohsuke.github.GitHub;
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.jacksonEntities.fileBased.FileBasedPipelineDescriptor;
-import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelineSerialization;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.FileBasedPipelineDescriptorUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelineSerialization;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.GithubAPI;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.pipeline_descriptor.IPipelineDescriptor;
@@ -164,6 +164,14 @@ public class GithubPipelinesRepository extends WrapperPipelinesRepository {
         } catch (IOException e) {
             throw new PipelinesRepositoryException("Error setting logo!", e);
         }
+    }
+
+
+    @Override
+    public Collection<String> getPipelinesNames() throws PipelinesRepositoryException {
+        init();
+
+        return getPipelinesName();
     }
 
 

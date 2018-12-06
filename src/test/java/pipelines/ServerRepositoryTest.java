@@ -62,6 +62,18 @@ public class ServerRepositoryTest {
     }
 
 
+    @Test
+    public void getPipelinesNamesWithEmptyResultTest() throws PipelinesRepositoryException {
+        ServerPipelinesRepository repository = new ServerPipelinesRepository(emptyLocation, new HashMap<>());
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getPipelinesNamesWithNonEmptyResult() throws PipelinesRepositoryException {
+        ServerPipelinesRepository repository = new ServerPipelinesRepository(location, new HashMap<>());
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithNonEmptyResultTest(repository, "PipelineA", "PipelineB");
+    }
+
 
     @Test
     public void insertNonExistentPipelineTest() throws PipelinesRepositoryException {

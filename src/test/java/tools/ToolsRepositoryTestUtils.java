@@ -102,6 +102,24 @@ public class ToolsRepositoryTestUtils {
     }
 
 
+    public static void getToolsNamesWithNonEmptyResultTest(IToolsRepository repository, String... expectedNames) throws ToolsRepositoryException {
+        Collection<String> names = repository.getToolsNames();
+
+        assertNotNull(names);
+        assertEquals(expectedNames.length, names.size());
+
+        for(String toolName : expectedNames)
+            assertTrue(names.contains(toolName));
+    }
+
+    public static void getToolsNamesWithEmptyResultTest(IToolsRepository repository) throws ToolsRepositoryException {
+        Collection<String> names = repository.getToolsNames();
+
+        assertNotNull(names);
+        assertEquals(0, names.size());
+    }
+
+
     public static void insertNonExistentToolTest(IToolsRepository repository) throws ToolsRepositoryException {
         String toolName = null;
 

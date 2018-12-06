@@ -64,6 +64,11 @@ public class CacheRepositoryTest {
         }
 
         @Override
+        public Collection<String> getToolsNames() throws ToolsRepositoryException {
+            return toolsByName.keySet();
+        }
+
+        @Override
         public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
             try { Thread.sleep(5*1000); } catch (Exception e) { }
             return toolsByName.values();
@@ -101,6 +106,7 @@ public class CacheRepositoryTest {
 
             toolsByName.remove(toolName);
         }
+
     }
 
 
@@ -137,6 +143,19 @@ public class CacheRepositoryTest {
     public void setNullLogoTest() throws ToolsRepositoryException {
         CacheToolsRepository repository = new CacheToolsRepository(new DummyToolsRepository(false));
         ToolsRepositoryTestUtils.setNullLogoTest(repository);
+    }
+
+
+    @Test
+    public void getToolsNamesWithEmptyResultTest() throws ToolsRepositoryException {
+        CacheToolsRepository repository = new CacheToolsRepository(new DummyToolsRepository(true));
+        ToolsRepositoryTestUtils.getToolsNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getToolsNamesWithNonEmptyResult() throws ToolsRepositoryException {
+        CacheToolsRepository repository = new CacheToolsRepository(new DummyToolsRepository(false));
+        ToolsRepositoryTestUtils.getToolsNamesWithNonEmptyResultTest(repository, "Blast", "Velvet", "Trimmomatic");
     }
 
 

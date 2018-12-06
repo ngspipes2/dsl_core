@@ -64,6 +64,19 @@ public class GitHubRepositoryTest {
 
 
     @Test
+    public void getToolsNamesWithEmptyResultTest() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(EMPTY_LOCATION, getConfig());
+        ToolsRepositoryTestUtils.getToolsNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getToolsNamesWithNonEmptyResult() throws ToolsRepositoryException {
+        GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
+        ToolsRepositoryTestUtils.getToolsNamesWithNonEmptyResultTest(repository, "Blast", "Velvet", "Trimmomatic");
+    }
+
+
+    @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
         GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
         ToolsRepositoryTestUtils.insertNonExistentToolTest(repository);

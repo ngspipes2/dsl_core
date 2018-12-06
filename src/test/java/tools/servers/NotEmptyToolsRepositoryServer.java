@@ -47,6 +47,11 @@ public class NotEmptyToolsRepositoryServer {
         this.logo = logo;
     }
 
+    @RequestMapping(value = "notempty/names", method = RequestMethod.GET)
+    public Collection<String> getNames() throws Exception {
+        return toolsByName.keySet();
+    }
+
     @RequestMapping(value = "notempty/tools", method = RequestMethod.GET)
     public Collection<IToolDescriptor> getAll() throws Exception {
         return toolsByName.values();

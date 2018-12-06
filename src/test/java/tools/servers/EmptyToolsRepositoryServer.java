@@ -35,6 +35,11 @@ public class EmptyToolsRepositoryServer {
         this.logo = logo;
     }
 
+    @RequestMapping(value = "empty/names", method = RequestMethod.GET)
+    public Collection<String> getNames() throws Exception {
+        return toolsByName.keySet();
+    }
+
     @RequestMapping(value = "empty/tools", method = RequestMethod.GET)
     public Collection<IToolDescriptor> getAll() throws Exception {
         return toolsByName.values();

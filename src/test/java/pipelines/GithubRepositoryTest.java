@@ -65,6 +65,19 @@ public class GithubRepositoryTest {
 
 
     @Test
+    public void getPipelinesNamesWithEmptyResultTest() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(EMPTY_LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getPipelinesNamesWithNonEmptyResult() throws PipelinesRepositoryException {
+        GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithNonEmptyResultTest(repository, "FirstStudyCase");
+    }
+
+
+    @Test
     public void insertNonExistentPipelineTest() throws PipelinesRepositoryException {
         GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig(), PipelineSerialization.Format.YAML);
         PipelinesRepositoryTestUtils.insertNonExistentPipelineTest(repository);

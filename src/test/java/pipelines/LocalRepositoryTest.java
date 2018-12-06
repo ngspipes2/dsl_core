@@ -45,6 +45,19 @@ public class LocalRepositoryTest {
 
 
     @Test
+    public void getPipelinesNamesWithEmptyResultTest() throws PipelinesRepositoryException {
+        LocalPipelinesRepository repository = new LocalPipelinesRepository(EMPTY_LOCATION, null);
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getPipelinesNamesWithNonEmptyResult() throws PipelinesRepositoryException {
+        LocalPipelinesRepository repository = new LocalPipelinesRepository(LOCATION, null);
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithNonEmptyResultTest(repository, "FirstStudyCase");
+    }
+
+
+    @Test
     public void insertNonExistentPipelineTest() throws PipelinesRepositoryException {
         LocalPipelinesRepository repository = new LocalPipelinesRepository(LOCATION, null, PipelineSerialization.Format.YAML);
         PipelinesRepositoryTestUtils.insertNonExistentPipelineTest(repository);

@@ -180,6 +180,14 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
 
 
     @Override
+    public Collection<String> getToolsNames() throws ToolsRepositoryException {
+        init();
+
+        return getToolsName();
+    }
+
+
+    @Override
     protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
         init();
 

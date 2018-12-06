@@ -141,6 +141,45 @@ public class ServerToolsRepository extends WrapperToolsRepository {
 
 
     @Override
+    public Collection<String> getToolsNames() throws ToolsRepositoryException {
+        try {
+            OkHttpClient client = createClient();
+            Request request = createRequestBuilder()
+                    .url(getToolsNamesUrl())
+                    .header("Accept", getAcceptHeader())
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return handleGetNamesResponse(response);
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error getting tools names from Server!", e);
+        } catch (DSLCoreException e) {
+            throw new ToolsRepositoryException(e.getMessage(), e);
+        }
+    }
+
+    private Collection<String> handleGetNamesResponse(Response response) throws IOException, DSLCoreException, ToolsRepositoryException {
+        ResponseBody body = response.body();
+
+        if(body == null)
+            throw new ToolsRepositoryException("Server returned invalid tools names content!");
+
+        String content = body.string();
+
+        if(content == null || content.isEmpty())
+            throw new ToolsRepositoryException("Server returned invalid tools names content!");
+
+        String httpHeader = response.header("Content-Type");
+        Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
+
+        ObjectMapper mapper = ToolMapper.getToolsMapper(format.getFactory());
+        JavaType klass = mapper.getTypeFactory().constructCollectionType(List.class, String.class);
+        return Serialization.deserialize(content, klass, mapper);
+    }
+
+
+    @Override
     protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
         try {
             OkHttpClient client = createClient();
@@ -317,6 +356,10 @@ public class ServerToolsRepository extends WrapperToolsRepository {
 
     private String getLogoUrl(){
         return super.location + "/logo";
+    }
+
+    private String getToolsNamesUrl() {
+        return super.location + "/names";
     }
 
     private String getToolsUrl() {

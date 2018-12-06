@@ -48,6 +48,15 @@ public class CacheToolsRepository implements IToolsRepository {
         this.logo = logo;
     }
 
+
+    @Override
+    public Collection<String> getToolsNames() throws ToolsRepositoryException {
+        synchronized (lock) {
+            return source.getToolsNames();
+        }
+    }
+
+
     @Override
     public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
         synchronized (lock) {

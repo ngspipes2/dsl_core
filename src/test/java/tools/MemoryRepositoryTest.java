@@ -55,6 +55,17 @@ public class MemoryRepositoryTest {
 
 
     @Test
+    public void getToolsNamesWithEmptyResultTest() throws ToolsRepositoryException {
+        ToolsRepositoryTestUtils.getToolsNamesWithEmptyResultTest(new MemoryToolsRepository());
+    }
+
+    @Test
+    public void getToolsNamesWithNonEmptyResult() throws ToolsRepositoryException {
+        ToolsRepositoryTestUtils.getToolsNamesWithNonEmptyResultTest(REPOSITORY, "Blast", "Velvet", "Trimmomatic");
+    }
+
+
+    @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
         ToolsRepositoryTestUtils.insertNonExistentToolTest(REPOSITORY);
     }

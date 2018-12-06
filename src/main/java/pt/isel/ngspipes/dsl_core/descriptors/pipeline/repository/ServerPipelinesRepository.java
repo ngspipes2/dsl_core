@@ -141,6 +141,45 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
 
 
     @Override
+    public Collection<String> getPipelinesNames() throws PipelinesRepositoryException {
+        try {
+            OkHttpClient client = createClient();
+            Request request = createRequestBuilder()
+                    .url(getPipelinesNamesUrl())
+                    .header("Accept", getAcceptHeader())
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            return handleGetNamesResponse(response);
+        } catch (IOException e) {
+            throw new PipelinesRepositoryException("Error getting pipelines names from Server!", e);
+        } catch (DSLCoreException e) {
+            throw new PipelinesRepositoryException(e.getMessage(), e);
+        }
+    }
+
+    private Collection<String> handleGetNamesResponse(Response response) throws PipelinesRepositoryException, IOException, DSLCoreException {
+        ResponseBody body = response.body();
+
+        if(body == null)
+            throw new PipelinesRepositoryException("Server returned invalid pipelines names content!");
+
+        String content = body.string();
+
+        if(content == null || content.isEmpty())
+            throw new PipelinesRepositoryException("Server returned invalid pipelines names content!");
+
+        String httpHeader =  response.header("Content-Type");
+        Serialization.Format format = Serialization.getFormatFromHttpHeader(httpHeader);
+
+        ObjectMapper mapper = PipelineMapper.getPipelinesMapper(format.getFactory());
+        JavaType klass = mapper.getTypeFactory().constructCollectionType(List.class, String.class);
+        return Serialization.deserialize(content, klass, mapper);
+    }
+
+
+    @Override
     public Collection<IPipelineDescriptor> getAllWrapped() throws PipelinesRepositoryException {
         try {
             OkHttpClient client = createClient();
@@ -313,6 +352,10 @@ public class ServerPipelinesRepository extends WrapperPipelinesRepository {
 
     private String getLogoUrl() {
         return super.location + "/logo";
+    }
+
+    private String getPipelinesNamesUrl() {
+        return super.location + "/names";
     }
 
     private String getPipelinesUrl() {

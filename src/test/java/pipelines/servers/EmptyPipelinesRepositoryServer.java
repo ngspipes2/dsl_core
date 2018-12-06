@@ -34,6 +34,11 @@ public class EmptyPipelinesRepositoryServer {
         this.logo = logo;
     }
 
+    @RequestMapping(value = "empty/names", method = RequestMethod.GET)
+    public Collection<String> getNames() throws Exception {
+        return pipelinesByName.keySet();
+    }
+
     @RequestMapping(value = "empty/pipelines", method = RequestMethod.GET)
     public Collection<IPipelineDescriptor> getAll() throws Exception {
         return pipelinesByName.values();

@@ -60,6 +60,11 @@ public class CacheRepositoryTest {
         }
 
         @Override
+        public Collection<String> getPipelinesNames() throws PipelinesRepositoryException {
+            return pipelinesByName.keySet();
+        }
+
+        @Override
         public Collection<IPipelineDescriptor> getAll() throws PipelinesRepositoryException {
             try { Thread.sleep(5*1000); } catch (Exception e) { }
             return pipelinesByName.values();
@@ -133,6 +138,19 @@ public class CacheRepositoryTest {
     public void setNullLogoTest() throws PipelinesRepositoryException {
         CachePipelinesRepository repository = new CachePipelinesRepository(new DummyPipelinesRepository(false));
         PipelinesRepositoryTestUtils.setNullLogoTest(repository);
+    }
+
+
+    @Test
+    public void getPipelinesNamesWithEmptyResultTest() throws PipelinesRepositoryException {
+        CachePipelinesRepository repository = new CachePipelinesRepository(new DummyPipelinesRepository(true));
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getPipelinesNamesWithNonEmptyResult() throws PipelinesRepositoryException {
+        CachePipelinesRepository repository = new CachePipelinesRepository(new DummyPipelinesRepository(false));
+        PipelinesRepositoryTestUtils.getPipelinesNamesWithNonEmptyResultTest(repository, "Pipeline 1", "Pipeline 2");
     }
 
 

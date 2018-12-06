@@ -37,6 +37,11 @@ public class MemoryToolsRepository implements IToolsRepository {
     }
 
     @Override
+    public Collection<String> getToolsNames() throws ToolsRepositoryException {
+        return toolsByName.keySet();
+    }
+
+    @Override
     public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
         synchronized (lock) {
             return toolsByName.values();
