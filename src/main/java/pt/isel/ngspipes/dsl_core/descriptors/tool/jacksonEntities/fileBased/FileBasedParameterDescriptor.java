@@ -6,6 +6,7 @@ import pt.isel.ngspipes.tool_descriptor.implementations.ParameterDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IParameterDescriptor;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class FileBasedParameterDescriptor extends ParameterDescriptor {
 
@@ -37,7 +38,7 @@ public class FileBasedParameterDescriptor extends ParameterDescriptor {
                 source.getSeparator(),
                 source.getDepends(),
                 source.getDependentValues(),
-                source.getSubParameters()
+                source.getSubParameters() == null ? null : source.getSubParameters().stream().map(FileBasedParameterDescriptor::new).collect(Collectors.toList())
         );
     }
 
