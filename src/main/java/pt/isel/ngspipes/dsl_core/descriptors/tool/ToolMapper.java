@@ -1,6 +1,7 @@
 package pt.isel.ngspipes.dsl_core.descriptors.tool;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.JacksonUtils;
@@ -11,7 +12,11 @@ public class ToolMapper {
 
     public static ObjectMapper getToolsMapper(JsonFactory factory) {
         SimpleAbstractTypeResolver resolver = getTypeResolver();
-        return JacksonUtils.getObjectMapper(factory, resolver);
+        ObjectMapper mapper = JacksonUtils.getObjectMapper(factory, resolver);
+
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        return mapper;
     }
 
     public static SimpleAbstractTypeResolver getTypeResolver() {
