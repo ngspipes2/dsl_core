@@ -317,7 +317,7 @@ public class  GithubToolsRepository extends WrapperToolsRepository {
         for(String fileName : info.executionContextsNames) {
             if(tool.getExecutionContexts()
                 .stream()
-                .noneMatch(ec -> ec.getName().equals(fileName.split(".")[0])))
+                .noneMatch(ec -> ec.getName().equals(fileName.split("\\.")[0])))
                 GithubAPI.deleteFile(repository, info.executionContextsDirectory, fileName);
         }
     }

@@ -263,7 +263,7 @@ public class LocalToolsRepository extends WrapperToolsRepository {
         for(String fileName : info.executionContextsNames) {
             if(tool.getExecutionContexts()
                     .stream()
-                    .noneMatch(ec -> ec.getName().equals(fileName.split(".")[0])))
+                    .noneMatch(ec -> ec.getName().equals(fileName.split("\\.")[0])))
                 IOUtils.deleteFile(info.executionContextsDirectory + SEPARATOR + fileName);
         }
     }
