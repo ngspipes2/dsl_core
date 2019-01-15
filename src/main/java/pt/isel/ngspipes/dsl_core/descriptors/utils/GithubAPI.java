@@ -1,5 +1,7 @@
 package pt.isel.ngspipes.dsl_core.descriptors.utils;
 
+import org.apache.commons.io.IOUtils;
+import org.kohsuke.github.GHBlob;
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
@@ -89,20 +91,14 @@ public class GithubAPI {
 
     public static String getFileContent(GHRepository repository, String path) throws IOException {
         GHContent file = repository.getFileContent(path);
-
-        //Forced to used deprecated "getContent()" because "read()" uses RAW_URL from github api which returns old version of file
-        String content = file.getContent();
-
-        return content;
+        GHBlob blob = repository.getBlob(file.getSha());
+        return IOUtils.toString(blob.read());
     }
 
     public static byte[] getFileBytes(GHRepository repository, String path) throws IOException {
         GHContent file = repository.getFileContent(path);
-
-        //Forced to used deprecated "getContent()" because "read()" uses RAW_URL from github api which returns old version of file
-        String content = file.getContent();
-
-        return content.getBytes();
+        GHBlob blob = repository.getBlob(file.getSha());
+        return IOUtils.toByteArray(blob.read());
     }
 
 
