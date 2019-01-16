@@ -1,6 +1,5 @@
 package pipelines;
 
-import junit.framework.AssertionFailedError;
 import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.repository.GithubPipelinesRepository;
 import pt.isel.ngspipes.dsl_core.descriptors.pipeline.utils.PipelineSerialization;
@@ -44,17 +43,7 @@ public class GithubRepositoryTest {
     @Test
     public void setLogoTest() throws PipelinesRepositoryException {
         GithubPipelinesRepository repository = new GithubPipelinesRepository(LOCATION, getConfig());
-
-        try {
-            PipelinesRepositoryTestUtils.setNullLogoTest(repository);
-        } catch (AssertionFailedError e) {
-            /*
-            Unfortunately there is some kind of problem with some kind of cache
-            because even after change logo and consulting browser manually
-            confirming that logo was changed successfully, github library is returning old logo
-            so for now I will assume this test is passing :(
-            */
-        }
+        PipelinesRepositoryTestUtils.setNullLogoTest(repository);
     }
 
     @Test

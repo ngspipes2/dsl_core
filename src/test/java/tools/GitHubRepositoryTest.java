@@ -1,6 +1,5 @@
 package tools;
 
-import junit.framework.AssertionFailedError;
 import org.junit.Test;
 import pt.isel.ngspipes.dsl_core.descriptors.tool.repository.GithubToolsRepository;
 import utils.ToolsRepositoryException;
@@ -43,17 +42,7 @@ public class GitHubRepositoryTest {
     @Test
     public void setLogoTest() throws ToolsRepositoryException {
         GithubToolsRepository repository = new GithubToolsRepository(LOCATION, getConfig());
-
-        try {
-            ToolsRepositoryTestUtils.setNullLogoTest(repository);
-        } catch (AssertionFailedError e) {
-            /*
-            Unfortunately there is some kind of problem with some kind of cache
-            because even after change logo and consulting browser manually
-            confirming that logo was changed successfully, github library is returning old logo
-            so for now I will assume this test is passing :(
-            */
-        }
+        ToolsRepositoryTestUtils.setNullLogoTest(repository);
     }
 
     @Test
