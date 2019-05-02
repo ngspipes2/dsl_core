@@ -12,15 +12,34 @@ import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import tools.servers.NotEmptyToolsRepositoryServer;
 import utils.ToolsRepositoryException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class ToolsRepositoryFactoryTest {
+
+    private static final String ACCESS_TOKEN = null;
+    private static final String USER_NAME = "NGSPipesShare";
+
+
+
+    private static Map<String, Object> getGithubConfig() {
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(GithubToolsRepository.USER_NAME_CONFIG_KEY, USER_NAME);
+        config.put(GithubToolsRepository.ACCESS_TOKEN_CONFIG_KEY, ACCESS_TOKEN);
+
+        return config;
+    }
+
+
 
     @Test
     public void getExistentGithubRepositoryTest() throws ToolsRepositoryException {
         String location = "https://github.com/ngspipes2/tools_support";
 
-        IToolsRepository repository = ToolsRepositoryFactory.create(location, null);
+        IToolsRepository repository = ToolsRepositoryFactory.create(location, getGithubConfig());
 
         assertNotNull(repository);
         assertTrue(GithubToolsRepository.class.isAssignableFrom(repository.getClass()));
@@ -31,7 +50,7 @@ public class ToolsRepositoryFactoryTest {
     public void getNonExistentGithubRepositoryTest() throws ToolsRepositoryException {
         String location = "https://github.com/ngspipes2/non_existest_repository";
 
-        IToolsRepository repository = ToolsRepositoryFactory.create(location, null);
+        IToolsRepository repository = ToolsRepositoryFactory.create(location, getGithubConfig());
 
         assertNull(repository);
     }

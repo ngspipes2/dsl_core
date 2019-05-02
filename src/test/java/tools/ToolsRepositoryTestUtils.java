@@ -46,11 +46,77 @@ public class ToolsRepositoryTestUtils {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
 
         IExecutionContextDescriptor context = new ExecutionContextDescriptor();
-        context.setName("Dummy Execution Context");
+        context.setName("Dummy-Execution-Context");
 
         contexts.add(context);
 
         return contexts;
+    }
+
+
+    public static void getExistentLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] logo = repository.getLogo();
+
+        assertNotNull(logo);
+        assertNotEquals(0, logo.length);
+    }
+
+    public static void getNonExistentLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] logo = repository.getLogo();
+
+        assertNull(logo);
+    }
+
+    public static void setLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] originalLogo = repository.getLogo();
+
+        try{
+            byte[] logo = new byte[]{1,2,3};
+
+            repository.setLogo(logo);
+
+            byte[] receivedLogo = repository.getLogo();
+
+            assertNotNull(receivedLogo);
+            assertEquals(logo.length, receivedLogo.length);
+
+            for(int i=0; i<logo.length; ++i)
+                assertEquals(logo[i], receivedLogo[i]);
+        } finally {
+            repository.setLogo(originalLogo);
+        }
+    }
+
+    public static void setNullLogoTest(IToolsRepository repository) throws ToolsRepositoryException {
+        byte[] originalLogo = repository.getLogo();
+
+        try{
+            repository.setLogo(null);
+
+            byte[] receivedLogo = repository.getLogo();
+
+            assertNull(receivedLogo);
+        } finally {
+            repository.setLogo(originalLogo);
+        }
+    }
+
+
+    public static void getToolsNamesWithNonEmptyResultTest(IToolsRepository repository, String... expectedNames) throws ToolsRepositoryException {
+        Collection<String> names = repository.getToolsNames();
+
+        assertNotNull(names);
+        assertEquals(expectedNames.length, names.size());
+
+        for(String toolName : expectedNames)
+            assertTrue(names.contains(toolName));
+    }
+
+    public static void getToolsNamesWithEmptyResultTest(IToolsRepository repository) throws ToolsRepositoryException {
+        Collection<String> names = repository.getToolsNames();
+
+        assertNotNull(names);
+        assertEquals(0, names.size());
     }
 
 
@@ -67,7 +133,7 @@ public class ToolsRepositoryTestUtils {
             assertEquals(1, tool.getCommands().size());
             assertEquals("Dummy Command", tool.getCommands().stream().findFirst().get().getName());
             assertEquals(1, tool.getExecutionContexts().size());
-            assertEquals("Dummy Execution Context", tool.getExecutionContexts().stream().findFirst().get().getName());
+            assertEquals("Dummy-Execution-Context", tool.getExecutionContexts().stream().findFirst().get().getName());
         } finally {
             if(toolName != null)
                 repository.delete(toolName);

@@ -10,8 +10,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
 public class JacksonUtils {
 
-
-    public static ObjectMapper getObjecTMapper() {
+    public static ObjectMapper getObjectMapper() {
         return getJSONMapper();
     }
 

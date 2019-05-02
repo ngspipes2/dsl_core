@@ -2,24 +2,23 @@ package pt.isel.ngspipes.dsl_core.descriptors.tool.repository;
 
 import pt.isel.ngspipes.dsl_core.descriptors.Configuration;
 import pt.isel.ngspipes.dsl_core.descriptors.exceptions.DSLCoreException;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.JacksonEntityService;
-import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.ToolsDescriptorsUtils;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.jacksonEntities.fileBased.FileBasedToolDescriptor;
+import pt.isel.ngspipes.dsl_core.descriptors.tool.utils.FileBasedToolDescriptorsUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.IOUtils;
 import pt.isel.ngspipes.dsl_core.descriptors.utils.Serialization;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IExecutionContextDescriptor;
 import pt.isel.ngspipes.tool_descriptor.interfaces.IToolDescriptor;
-import pt.isel.ngspipes.tool_repository.implementations.ToolsRepository;
 import pt.isel.ngspipes.tool_repository.interfaces.IToolsRepository;
 import utils.ToolsRepositoryException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
-public class LocalToolsRepository extends ToolsRepository {
+public class LocalToolsRepository extends WrapperToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
@@ -40,6 +39,62 @@ public class LocalToolsRepository extends ToolsRepository {
 
 
 
+    private class ToolInfo {
+
+        public String toolName;
+        public String toolDirectory;
+        public boolean existsTool;
+
+        public String toolDescriptorName;
+        public String toolDescriptorDirectory;
+        public String toolDescriptorPath;
+        public boolean existsToolDescriptor;
+
+        public String toolLogoName;
+        public String toolLogoDirectory;
+        public String toolLogoPath;
+        public boolean existsToolLogo;
+
+        public String executionContextsDirectory;
+        public Collection<String> executionContextsNames;
+        public Collection<String> executionContextsPath;
+
+        public Serialization.Format serializationFormat;
+
+
+
+        public ToolInfo( ) { }
+
+        public ToolInfo(String toolName, String toolDirectory, boolean existsTool,
+                        String toolDescriptorName, String toolDescriptorDirectory, String toolDescriptorPath, boolean existsToolDescriptor,
+                        String toolLogoName, String toolLogoDirectory, String toolLogoPath, boolean existsToolLogo,
+                        String executionContextsDirectory, Collection<String> executionContextsNames, Collection<String> executionContextsPath,
+                        Serialization.Format serializationFormat) {
+            this.toolName = toolName;
+            this.toolDirectory = toolDirectory;
+            this.existsTool = existsTool;
+
+            this.toolDescriptorName = toolDescriptorName;
+            this.toolDescriptorDirectory = toolDescriptorDirectory;
+            this.toolDescriptorPath = toolDescriptorPath;
+            this.existsToolDescriptor = existsToolDescriptor;
+
+            this.toolLogoName = toolLogoName;
+            this.toolLogoDirectory = toolLogoDirectory;
+            this.toolLogoPath = toolLogoPath;
+            this.existsToolLogo = existsToolLogo;
+
+            this.executionContextsDirectory = executionContextsDirectory;
+            this.executionContextsNames = executionContextsNames;
+            this.executionContextsPath = executionContextsPath;
+
+            this.serializationFormat = serializationFormat;
+        }
+
+    }
+
+
+
     private Serialization.Format serializationFormat;
 
 
@@ -54,10 +109,47 @@ public class LocalToolsRepository extends ToolsRepository {
     }
 
 
-    @Override
-    public Collection<IToolDescriptor> getAll() throws ToolsRepositoryException {
 
-        Collection<String> names = IOUtils.getSubDirectoriesName(location + SEPARATOR);
+    @Override
+    public byte[] getLogo() throws ToolsRepositoryException {
+        String logoPath = super.location + "/" + LOGO_FILE_NAME;
+
+        try {
+            if(IOUtils.existFile(logoPath))
+                return IOUtils.readBytes(logoPath);
+            else
+                return null;
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error getting logo!", e);
+        }
+    }
+
+    @Override
+    public void setLogo(byte[] logo) throws ToolsRepositoryException {
+        String logoPath = super.location + "/" + LOGO_FILE_NAME;
+
+        try {
+            if(logo == null) {
+                if(IOUtils.existFile(logoPath))
+                    IOUtils.deleteFile(logoPath);
+            } else {
+                IOUtils.writeBytes(logo, logoPath);
+            }
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Error setting logo!", e);
+        }
+    }
+
+
+    @Override
+    public Collection<String> getToolsNames() throws ToolsRepositoryException {
+        return IOUtils.getSubDirectoriesName(location);
+    }
+
+
+    @Override
+    protected Collection<IToolDescriptor> getAllWrapped() throws ToolsRepositoryException {
+        Collection<String> names = IOUtils.getSubDirectoriesName(location);
         Collection<IToolDescriptor> tools = new LinkedList<>();
 
         for (String name: names)
@@ -66,154 +158,249 @@ public class LocalToolsRepository extends ToolsRepository {
         return tools;
     }
 
-    @Override
-    public IToolDescriptor get(String toolName) throws ToolsRepositoryException {
-        String toolPath = location + SEPARATOR + toolName;
 
-        if(!IOUtils.existDirectory(toolPath))
+    @Override
+    protected IToolDescriptor getWrapped(String toolName) throws ToolsRepositoryException {
+        ToolInfo toolInfo = createToolInfo(toolName);
+
+        if(!toolInfo.existsTool)
             return null;
 
-        String descriptorName = getDescriptorName(toolPath);
-        String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
-        String type = IOUtils.getExtensionFromFilePath(descriptorName);
+        return get(toolInfo);
+    }
+
+    private IToolDescriptor get(ToolInfo info) throws ToolsRepositoryException {
         try {
-            return getToolDescriptor(toolPath, toolDescriptorPath, type);
+            IToolDescriptor toolDescriptor = getToolDescriptor(info);
+            toolDescriptor.setLogo(getToolLogo(info));
+            toolDescriptor.setExecutionContexts(getToolExecutionContexts(info));
+
+            return toolDescriptor;
         } catch (IOException e) {
-            throw new ToolsRepositoryException("Error loading " + toolName + " tool descriptor", e);
+            throw new ToolsRepositoryException("Error loading " + info.toolName + " tool descriptor", e);
         }
     }
 
-    @Override
-    public void update(IToolDescriptor tool) throws ToolsRepositoryException {
-        String toolPath = location + SEPARATOR + tool.getName();
+    private IToolDescriptor getToolDescriptor(ToolInfo info) throws IOException, ToolsRepositoryException {
+        String content = IOUtils.read(info.toolDescriptorPath);
 
-        if(!IOUtils.existDirectory(toolPath))
-            throw new ToolsRepositoryException("There is no tool with name: " + tool.getName());
+        IToolDescriptor toolDescriptor = FileBasedToolDescriptorsUtils.createToolDescriptor(content, info.serializationFormat);
 
-        String descriptorName = getDescriptorName(toolPath);
-        String toolDescriptorPath = toolPath + SEPARATOR + descriptorName;
-        String type = IOUtils.getExtensionFromFilePath(descriptorName);
-
-        new File(toolPath + "/" + DESCRIPTOR_FILE_NAME).delete();
-        new File(toolPath + "/" + LOGO_FILE_NAME).delete();
-        IOUtils.deleteFolder(toolPath + EXECUTION_CONTEXTS_DIRECTORY);
-
-        try {
-            writeTool(tool, toolPath, toolDescriptorPath, getFormat(type));
-        } catch (IOException e) {
-            throw new ToolsRepositoryException("Error writing " + tool.getName() + " tool descriptor", e);
-        }
-    }
-
-    @Override
-    public void insert(IToolDescriptor tool) throws ToolsRepositoryException {
-        tool = JacksonEntityService.transformToFileBasedToolDescriptor(tool);
-        String toolPath = location + SEPARATOR + tool.getName();
-
-        if(IOUtils.existDirectory(toolPath))
-           throw new ToolsRepositoryException("There is already a tool with name: " + tool.getName());
-
-        IOUtils.createFolder(toolPath);
-        String toolDescriptorPath = toolPath + SEPARATOR + DESCRIPTOR_FILE_NAME + "." + getExtension();
-        try {
-            writeTool(tool, toolPath, toolDescriptorPath, serializationFormat);
-        } catch (IOException e) {
-            throw new ToolsRepositoryException("Error writing " + tool.getName() + " tool descriptor", e);
-        }
-    }
-
-    @Override
-    public void delete(String toolName) {
-        IOUtils.deleteFolder(location + SEPARATOR + toolName);
-    }
-
-
-    private void writeTool(IToolDescriptor tool, String toolPath, String toolDescriptorPath, Serialization.Format format) throws IOException, ToolsRepositoryException {
-        String descriptorAsString = ToolsDescriptorsUtils.getToolDescriptorAsString(tool, format);
-        IOUtils.write(descriptorAsString, toolDescriptorPath);
-
-        Collection<IExecutionContextDescriptor> executionContexts = tool.getExecutionContexts();
-        writeExecutionContexts(toolPath, executionContexts);
-
-        if(tool.getLogo() != null)
-            IOUtils.writeBytes(tool.getLogo(), toolPath + SEPARATOR + LOGO_FILE_NAME);
-    }
-
-    private IToolDescriptor getToolDescriptor(String toolPath, String toolDescriptorPath, String type) throws IOException, ToolsRepositoryException {
-        String content = IOUtils.read(toolDescriptorPath);
-        IToolDescriptor toolDescriptor = ToolsDescriptorsUtils.createToolDescriptor(content, type);
-        Collection<IExecutionContextDescriptor> executionContextDescriptors = getExecutionContexts(toolPath);
-        toolDescriptor.setExecutionContexts(executionContextDescriptors);
-        toolDescriptor.setLogo(getLogo(toolPath));
         return toolDescriptor;
     }
 
-    private void writeExecutionContexts(String toolPath, Collection<IExecutionContextDescriptor> executionContexts) throws IOException, ToolsRepositoryException {
-        String dirPath = toolPath + EXECUTION_CONTEXTS_DIRECTORY;
-        IOUtils.createFolder(dirPath);
+    private byte[] getToolLogo(ToolInfo info) throws IOException, ToolsRepositoryException {
+        if(!info.existsToolLogo)
+            return null;
 
-        if(executionContexts == null)
-            return;
-
-        for (IExecutionContextDescriptor ctx : executionContexts) {
-            String currCtx = ToolsDescriptorsUtils.getExecutionContextDescriptorAsString(ctx, serializationFormat);
-            IOUtils.write(currCtx, dirPath + SEPARATOR + ctx.getName() + "." + getExtension());
-        }
+        return IOUtils.readBytes(info.toolLogoPath);
     }
 
-    private String getDescriptorName(String toolPath) throws ToolsRepositoryException {
-        String descriptorName;
-        Collection<String> names = IOUtils.getDirectoryFilesName(toolPath);
-        for (String currName: names) {
-            descriptorName = currName;
-            currName = currName.substring(0, currName.indexOf("."));
-            if(currName.equals(DESCRIPTOR_FILE_NAME)) {
-                return descriptorName;
-            }
-        }
-        throw new ToolsRepositoryException("Couldn't find descriptor for tool!");
-    }
-
-    private byte[] getLogo(String toolPath) throws IOException {
-        String logoPath = toolPath + SEPARATOR + LOGO_FILE_NAME;
-
-        if(IOUtils.existFile(logoPath))
-            return IOUtils.readBytes(logoPath);
-
-        return null;
-    }
-
-    private Collection<IExecutionContextDescriptor> getExecutionContexts(String path) throws IOException, ToolsRepositoryException {
+    private Collection<IExecutionContextDescriptor> getToolExecutionContexts(ToolInfo info) throws IOException, ToolsRepositoryException {
         Collection<IExecutionContextDescriptor> contexts = new LinkedList<>();
-        path += EXECUTION_CONTEXTS_DIRECTORY;
-        Collection<String> names = IOUtils.getDirectoryFilesName(path);
-        String pathCtx;
 
-        for (String name: names) {
-            pathCtx = path + SEPARATOR + name;
-            String serializationType = IOUtils.getExtensionFromFilePath(name);
-            String content = IOUtils.read(pathCtx);
-            IExecutionContextDescriptor context = ToolsDescriptorsUtils.createExecutionContextDescriptor(content, serializationType);
+        for (String contextPath : info.executionContextsPath) {
+            String type = IOUtils.getExtensionFromFilePath(contextPath);
+
+            String content = IOUtils.read(contextPath);
+
+            IExecutionContextDescriptor context = FileBasedToolDescriptorsUtils.createExecutionContextDescriptor(content, type);
+
             contexts.add(context);
         }
 
         return contexts;
     }
 
-    private String getExtension() throws ToolsRepositoryException {
+
+    @Override
+    protected void updateWrapped(IToolDescriptor tool) throws ToolsRepositoryException {
+        ToolInfo toolInfo = createToolInfo(tool.getName());
+
+        if(!toolInfo.existsTool)
+            throw new ToolsRepositoryException("There is no tool with name: " + tool.getName());
+
+        update(toolInfo, tool);
+    }
+
+    private void update(ToolInfo info, IToolDescriptor tool) throws ToolsRepositoryException {
         try {
-            return Serialization.getFileExtensionFromFormat(serializationFormat);
-        } catch (DSLCoreException e) {
-            throw new ToolsRepositoryException(e.getMessage(), e);
+            updateToolDescriptor(info, tool);
+            updateToolLogo(info, tool);
+            updateToolExecutionContexts(info, tool);
+        } catch (DSLCoreException | IOException e) {
+            throw new ToolsRepositoryException("Error writing " + info.toolName + " tool descriptor", e);
         }
     }
 
-    private Serialization.Format getFormat(String fileExtension) throws ToolsRepositoryException {
-        try {
-            return Serialization.getFormatFromFileExtension(fileExtension);
-        } catch (DSLCoreException e ) {
-            throw new ToolsRepositoryException(e.getMessage(), e);
+    private void updateToolDescriptor(ToolInfo info, IToolDescriptor tool) throws IOException, ToolsRepositoryException {
+        FileBasedToolDescriptor fileBasedToolDescriptor = new FileBasedToolDescriptor(tool);
+
+        String content = FileBasedToolDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
+
+        IOUtils.write(content, info.toolDescriptorPath);
+    }
+
+    private void updateToolLogo(ToolInfo info, IToolDescriptor tool) throws IOException {
+        if(tool.getLogo() != null)
+            IOUtils.writeBytes(tool.getLogo(), info.toolLogoPath);
+        else if(info.existsToolLogo)
+            IOUtils.deleteFile(info.toolLogoPath);
+    }
+
+    private void updateToolExecutionContexts(ToolInfo info, IToolDescriptor tool) throws IOException, DSLCoreException, ToolsRepositoryException {
+        String extension = "." + Serialization.getFileExtensionFromFormat(info.serializationFormat);
+
+        String content;
+        String path;
+        for(IExecutionContextDescriptor executionContext : tool.getExecutionContexts()) {
+            content = FileBasedToolDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
+            path = info.executionContextsDirectory + SEPARATOR + executionContext.getName() + extension;
+
+            IOUtils.write(content, path);
         }
+
+        for(String fileName : info.executionContextsNames) {
+            if(tool.getExecutionContexts()
+                    .stream()
+                    .noneMatch(ec -> ec.getName().equals(fileName.split("\\.")[0])))
+                IOUtils.deleteFile(info.executionContextsDirectory + SEPARATOR + fileName);
+        }
+    }
+
+
+    @Override
+    protected void insertWrapped(IToolDescriptor tool) throws ToolsRepositoryException {
+        ToolInfo toolInfo = createToolInfo(tool.getName());
+
+        if(toolInfo.existsTool)
+            throw new ToolsRepositoryException("There is already a tool with name: " + tool.getName());
+
+        insert(toolInfo, tool);
+    }
+
+    private void insert(ToolInfo info, IToolDescriptor tool) throws ToolsRepositoryException {
+        try {
+            IOUtils.createFolder(info.toolDirectory);
+            IOUtils.createFolder(info.executionContextsDirectory);
+
+            insertToolDescriptor(info, tool);
+            insertToolLogo(info, tool);
+            insertToolExecutionContexts(info, tool);
+        } catch (DSLCoreException | IOException e) {
+            throw new ToolsRepositoryException("Error writing " + tool.getName() + " tool descriptor", e);
+        }
+    }
+
+    private void insertToolDescriptor(ToolInfo info, IToolDescriptor tool) throws IOException, ToolsRepositoryException {
+        FileBasedToolDescriptor fileBasedToolDescriptor = new FileBasedToolDescriptor(tool);
+
+        String content = FileBasedToolDescriptorsUtils.getToolDescriptorAsString(fileBasedToolDescriptor, info.serializationFormat);
+
+        IOUtils.write(content, info.toolDescriptorPath);
+    }
+
+    private void insertToolLogo(ToolInfo info, IToolDescriptor tool) throws IOException {
+        if(tool.getLogo() != null)
+            IOUtils.writeBytes(tool.getLogo(), info.toolLogoPath);
+    }
+
+    private void insertToolExecutionContexts(ToolInfo info, IToolDescriptor tool) throws IOException, ToolsRepositoryException, DSLCoreException {
+        String extension = "." + Serialization.getFileExtensionFromFormat(info.serializationFormat);
+
+        String content;
+        String path;
+        for(IExecutionContextDescriptor executionContext : tool.getExecutionContexts()) {
+            content = FileBasedToolDescriptorsUtils.getExecutionContextDescriptorAsString(executionContext, info.serializationFormat);
+            path = info.executionContextsDirectory + SEPARATOR + executionContext.getName() + extension;
+            IOUtils.write(content, path);
+        }
+    }
+
+
+    @Override
+    public void delete(String toolName) throws ToolsRepositoryException {
+        ToolInfo toolInfo = createToolInfo(toolName);
+
+        if(!toolInfo.existsTool)
+            return;
+
+        delete(toolInfo);
+    }
+
+    private void delete(ToolInfo info) throws ToolsRepositoryException {
+        try {
+            deleteToolDescriptor(info);
+            deleteToolLogo(info);
+            deleteToolExecutionContexts(info);
+
+            IOUtils.deleteFolder(info.executionContextsDirectory);
+            IOUtils.deleteFolder(info.toolDirectory);
+        } catch (IOException e) {
+            throw new ToolsRepositoryException("Could not delete folder " + info.toolDirectory + "!", e);
+        }
+    }
+
+    private void deleteToolDescriptor(ToolInfo info) throws IOException {
+        IOUtils.deleteFile(info.toolDescriptorPath);
+    }
+
+    private void deleteToolLogo(ToolInfo info) throws IOException {
+        if(info.existsToolLogo)
+            IOUtils.deleteFile(info.toolLogoPath);
+    }
+
+    private void deleteToolExecutionContexts(ToolInfo info) throws IOException {
+        for(String path : info.executionContextsPath)
+            IOUtils.deleteFile(path);
+    }
+
+
+    private ToolInfo createToolInfo(String toolName) throws ToolsRepositoryException {
+        try {
+            ToolInfo info = new ToolInfo();
+
+            info.toolName = toolName;
+            info.toolDirectory = super.location + SEPARATOR + toolName;
+            info.existsTool = IOUtils.existDirectory(info.toolDirectory);
+
+            info.toolDescriptorName = getDescriptorName(info.toolDirectory);
+            info.toolDescriptorDirectory = info.toolDirectory;
+            info.toolDescriptorPath = info.toolDescriptorDirectory + SEPARATOR + info.toolDescriptorName;
+            info.existsToolDescriptor = IOUtils.existFile(info.toolDescriptorPath);
+
+            info.toolLogoName = LOGO_FILE_NAME;
+            info.toolLogoDirectory = info.toolDirectory;
+            info.toolLogoPath = info.toolLogoDirectory + SEPARATOR + LOGO_FILE_NAME;
+            info.existsToolLogo = IOUtils.existFile(info.toolLogoPath);
+
+            info.executionContextsDirectory = info.toolLogoDirectory + SEPARATOR + EXECUTION_CONTEXTS_DIRECTORY;
+            info.executionContextsNames = getExecutionContextsNames(info);
+            info.executionContextsPath = info.executionContextsNames
+                    .stream()
+                    .map(name -> info.executionContextsDirectory + SEPARATOR + name)
+                    .collect(Collectors.toList());
+
+            info.serializationFormat = Serialization.getFormatFromFileExtension(IOUtils.getExtensionFromFilePath(info.toolDescriptorPath));
+
+            return info;
+        } catch (DSLCoreException | IOException e) {
+            throw new ToolsRepositoryException("Error checking info for tool " + toolName + "!", e);
+        }
+    }
+
+    private String getDescriptorName(String toolDirectory) throws IOException, DSLCoreException {
+        for(String file : IOUtils.getDirectoryFilesName(toolDirectory)) {
+            if(file.startsWith(DESCRIPTOR_FILE_NAME))
+                return file;
+        }
+
+        String extension = "." + Serialization.getFileExtensionFromFormat(serializationFormat);
+        return DESCRIPTOR_FILE_NAME + extension;
+    }
+
+    private Collection<String> getExecutionContextsNames(ToolInfo info) throws IOException {
+        return IOUtils.getDirectoryFilesName(info.executionContextsDirectory);
     }
 
 }

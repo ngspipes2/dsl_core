@@ -27,8 +27,8 @@ public class IOUtils {
     }
 
     public static byte[] readBytes(String filePath) throws IOException {
-        try(BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            return org.apache.commons.io.IOUtils.toByteArray(br);
+        try(InputStream is = new FileInputStream(filePath)) {
+            return org.apache.commons.io.IOUtils.toByteArray(is);
         }
     }
 
@@ -105,6 +105,13 @@ public class IOUtils {
 
             dirFile.delete();
         }
+    }
+
+    public static void deleteFile(String dirPath) {
+        File file = new File(dirPath);
+
+        if(file.exists())
+            file.delete();
     }
 
 }

@@ -107,6 +107,72 @@ public class PipelinesRepositoryTestUtils {
     }
 
 
+    public static void getExistentLogoTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
+        byte[] logo = repository.getLogo();
+
+        assertNotNull(logo);
+        assertNotEquals(0, logo.length);
+    }
+
+    public static void getNonExistentLogoTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
+        byte[] logo = repository.getLogo();
+
+        assertNull(logo);
+    }
+
+    public static void setLogoTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
+        byte[] originalLogo = repository.getLogo();
+
+        try{
+            byte[] logo = new byte[]{1,2,3};
+
+            repository.setLogo(logo);
+
+            byte[] receivedLogo = repository.getLogo();
+
+            assertNotNull(receivedLogo);
+            assertEquals(logo.length, receivedLogo.length);
+
+            for(int i=0; i<logo.length; ++i)
+                assertEquals(logo[i], receivedLogo[i]);
+        } finally {
+            repository.setLogo(originalLogo);
+        }
+    }
+
+    public static void setNullLogoTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
+        byte[] originalLogo = repository.getLogo();
+
+        try{
+            repository.setLogo(null);
+
+            byte[] receivedLogo = repository.getLogo();
+
+            assertNull(receivedLogo);
+        } finally {
+            repository.setLogo(originalLogo);
+        }
+    }
+
+
+    public static void getPipelinesNamesWithNonEmptyResultTest(IPipelinesRepository repository, String... expectedNames) throws PipelinesRepositoryException {
+        Collection<String> names = repository.getPipelinesNames();
+
+        assertNotNull(names);
+        assertEquals(expectedNames.length, names.size());
+
+        for(String pipelineName : expectedNames)
+            assertTrue(names.contains(pipelineName));
+    }
+
+    public static void getPipelinesNamesWithEmptyResultTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
+        Collection<String> names = repository.getPipelinesNames();
+
+        assertNotNull(names);
+        assertEquals(0, names.size());
+    }
+
+
     public static void insertNonExistentPipelineTest(IPipelinesRepository repository) throws PipelinesRepositoryException {
         String pipelineName = null;
 

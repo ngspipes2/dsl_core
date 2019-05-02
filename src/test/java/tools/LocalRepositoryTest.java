@@ -19,6 +19,44 @@ public class LocalRepositoryTest {
 
 
     @Test
+    public void getExistentLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.getExistentLogoTest(repository);
+    }
+
+    @Test
+    public void getNonExistentLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(EMPTY_LOCATION, null);
+        ToolsRepositoryTestUtils.getNonExistentLogoTest(repository);
+    }
+
+    @Test
+    public void setLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.setLogoTest(repository);
+    }
+
+    @Test
+    public void setNullLogoTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.setNullLogoTest(repository);
+    }
+
+
+    @Test
+    public void getToolsNamesWithEmptyResultTest() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(EMPTY_LOCATION, null);
+        ToolsRepositoryTestUtils.getToolsNamesWithEmptyResultTest(repository);
+    }
+
+    @Test
+    public void getToolsNamesWithNonEmptyResult() throws ToolsRepositoryException {
+        LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
+        ToolsRepositoryTestUtils.getToolsNamesWithNonEmptyResultTest(repository, "Blast", "Velvet", "Trimmomatic");
+    }
+
+
+    @Test
     public void insertNonExistentToolTest() throws ToolsRepositoryException {
         LocalToolsRepository repository = new LocalToolsRepository(LOCATION, null);
         ToolsRepositoryTestUtils.insertNonExistentToolTest(repository);
