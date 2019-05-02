@@ -23,7 +23,7 @@ public class LocalToolsRepository extends ToolsRepository {
 
     private static final String LOGO_FILE_NAME = "Logo.png";
     private static final String DESCRIPTOR_FILE_NAME  = "Descriptor";
-    private static final String SEPARATOR = "/";
+    private static final String SEPARATOR = File.separatorChar + "";
     private static final String EXECUTION_CONTEXTS_DIRECTORY = "/execution_contexts";
 
 

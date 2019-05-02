@@ -3,6 +3,7 @@ package pt.isel.ngspipes.dsl_core.descriptors.utils;
 import java.io.*;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Objects;
 
 public class IOUtils {
 
@@ -95,7 +96,7 @@ public class IOUtils {
 
         if(dirFile.exists()) {
             if(dirFile.listFiles ()!= null){
-                for (File file : dirFile.listFiles()) {
+                for (File file : Objects.requireNonNull(dirFile.listFiles())) {
                     if(file.isDirectory())
                         deleteFolder(file.getAbsolutePath());
                     file.delete();
